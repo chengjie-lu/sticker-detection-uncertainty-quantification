@@ -12,6 +12,8 @@ ckpt model name: `epoch=31-step=7712.ckpt`
 pip install -r requirements.txt
 ```
 
+Please follow [this instruction](https://github.com/pytorch/vision/blob/main/CONTRIBUTING.md#development-installation) to build and install torchvision from source.
+
 ## Execution
 
 ```sh
