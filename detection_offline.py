@@ -121,6 +121,6 @@ if __name__ == '__main__':
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
-    detector.predict_multi(i_rz, i_og, n=10)
+    detector.predict_multi(i_rz, i_og, n=2)
 
 # score: softmax/sigmoid probability
