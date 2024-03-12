@@ -9,7 +9,7 @@ ckpt model name: `epoch=31-step=7712.ckpt`
 ## Requirements Installation
 
 ```sh
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Execution
