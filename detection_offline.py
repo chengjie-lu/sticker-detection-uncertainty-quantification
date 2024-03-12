@@ -105,14 +105,14 @@ class Detection:
                     image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
                                           (0, 0, 255), 2, cv.LINE_AA)
 
-        cv.imwrite('./test_{}.png'.format(time.time()), image_og)
+        cv.imwrite('./image_labeled/test_{}.png'.format(time.time()), image_og)
 
     def predict_multi(self, image_rz, image_og, n=10):
         for i in range(n):
             preds, boxes, labels, scores, logits = self.predict(image_rz)
             self.draw_boxes(boxes, labels, scores, image_og)
 
-        cv.imwrite('./multi_boxes_{}.png'.format(time.time()), image_og)
+        cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
 
 
 if __name__ == '__main__':
