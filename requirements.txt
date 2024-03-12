@@ -1,0 +1,13 @@
+pypylon
+opencv-python
+numpy
+tqdm
+torchmetrics==0.6.0
+pytorch-lightning==1.6.0
+pycocotools
+ImageHash
+onnx
+# onnxruntime-gpu
+onnxruntime
+psutil
+# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
