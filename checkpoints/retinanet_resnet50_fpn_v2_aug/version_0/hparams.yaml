@@ -1,0 +1,11 @@
+learning_rate: 0.001329438310548949
+momentum: 0.9966969806413202
+weight_decay: 6.1860955385231585e-06
+batch_size: 2
+num_classes: 3
+config:
+  lr: 0.001329438310548949
+  momentum: 0.9966969806413202
+  weight_decay: 6.1860955385231585e-06
+  batch_size: 2
+model_name: retinanet_resnet50_fpn_v2
