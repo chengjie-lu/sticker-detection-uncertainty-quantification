@@ -1,7 +1,7 @@
 # Sticker detector
 
-Model can be used in two formats: Onnx and ckpt. 
-Both models can be found in `checkpoints\retinanet_resnet50_fpn_v2_aug\version_0\checkpoints`
+Model can be used in two formats: Onnx and ckpt.
+Download the models [here](https://github.com/chengjie-lu/sticker-detection-uq/tree/main/checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints) and put them in `checkpoints\retinanet_resnet50_fpn_v2_aug\version_0\checkpoints`
 
 Onnx model name: `retinanet_resnet50_fpn_v2_aug.onnx`
 ckpt model name: `epoch=31-step=7712.ckpt`
