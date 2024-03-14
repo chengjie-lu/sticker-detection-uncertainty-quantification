@@ -23,6 +23,7 @@ class UQMetrics:
         :return:
         """
         self.shannon_entropy = round(-sum([p * (np.log(p + ets) / np.log(base)) for p in events]), 5)
+        return self.shannon_entropy
 
 
 if __name__ == '__main__':

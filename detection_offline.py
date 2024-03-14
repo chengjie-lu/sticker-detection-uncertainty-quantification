@@ -9,7 +9,10 @@ import time
 import cv2 as cv
 import torch
 
+from uq.metrics import UQMetrics
 from utils import load_camera_calibration, load_model, run_model, calc_3d_point
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 LABELS = {'Background': 0, 'Logo': 1, 'Sticker': 2}
@@ -22,6 +25,7 @@ class Detection:
         self.min_score = 0.6
         self.show_bounding_box_sticker = True
         self.show_bounding_box_logo = True
+        self.uq = UQMetrics()
         # self.image_resize_variable = tk.IntVar()
         # self.image_resize_variable.set(100)
 
@@ -61,10 +65,10 @@ class Detection:
         scores = preds[0]['scores'].cpu().detach().numpy()
         logits = preds[0]['logits'].cpu().detach().numpy()
 
-        print('==============================')
+        # print('==============================')
         # print(boxes)
-        print(scores)
-        print(logits)
+        # print(scores)
+        # print(logits)
         return preds, boxes, labels, scores, logits
 
     def draw_boxes(self, boxes, labels, scores, image_og):
@@ -107,11 +111,69 @@ class Detection:
 
         cv.imwrite('./image_labeled/test_{}.png'.format(time.time()), image_og)
 
+    @staticmethod
+    def insert(pre_dict, box, label, score, logit, pred_id):
+        similarity, insert_key = 0, None
+        for key in pre_dict.keys():
+            box1 = np.array(pre_dict[key]['box'][0]).reshape(1, -1)
+            box2 = box.reshape(1, -1)
+            sim = cosine_similarity(box1, box2)[0]
+            if similarity < sim:
+                similarity = sim
+                insert_key = key
+
+        if similarity > 0.99:
+            pre_dict[insert_key]['box'].append(box.tolist())
+            pre_dict[insert_key]['label'].append(label.tolist())
+            pre_dict[insert_key]['score'].append(score.tolist())
+            pre_dict[insert_key]['logit'].append(logit.tolist())
+        else:
+            pre_dict.update({'pred_{}'.format(pred_id):
+                {
+                    'box': [box.tolist()],
+                    'label': [label.tolist()],
+                    'score': [score.tolist()],
+                    'logit': [logit.tolist()]
+                }
+            })
+            pred_id += 1
+        # print(pre_dict)
+
     def predict_multi(self, image_rz, image_og, n=10):
+        predictions = {}
+        pred_id = 0
+        for i in range(n):
+            entropy_i = []
+            preds, boxes, labels, scores, logits = self.predict(image_rz)
+
+            for box, label, score, logit in zip(boxes, labels, scores, logits):
+                # if predictions == {}:
+                if i == 0:
+                    print(pred_id)
+                    predictions.update({'pred_{}'.format(pred_id):
+                        {
+                            'box': [box.tolist()],
+                            'label': [label.tolist()],
+                            'score': [score.tolist()],
+                            'logit': [logit.tolist()]
+                        }
+                    })
+                    pred_id += 1
+                else:
+                    self.insert(predictions, box, label, score, logit, pred_id)
+
+            # print(boxes)
+            # for pl in logits:
+            #     entropy_i.append(self.uq.entropy(pl))
+
+            self.draw_boxes(boxes, labels, scores, image_og)
+        print(predictions)
+        cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
+
+    def predict_multi_draw(self, image_rz, image_og, n=10):
         for i in range(n):
             preds, boxes, labels, scores, logits = self.predict(image_rz)
             self.draw_boxes(boxes, labels, scores, image_og)
-
         cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
 
 
@@ -121,6 +183,6 @@ if __name__ == '__main__':
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
-    detector.predict_multi(i_rz, i_og, n=2)
+    detector.predict_multi(i_rz, i_og, n=3)
 
 # score: softmax/sigmoid probability
