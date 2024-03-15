@@ -66,7 +66,7 @@ class Detection:
         logits = preds[0]['logits'].cpu().detach().numpy()
 
         # print('==============================')
-        # print(boxes)
+        print(np.delete(boxes, 0, axis=0))
         # print(scores)
         # print(logits)
         return preds, boxes, labels, scores, logits

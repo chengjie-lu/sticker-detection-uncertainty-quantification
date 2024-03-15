@@ -25,9 +25,10 @@ from torch import nn
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
-a = np.array([1663.7069, 1603.4716, 1763.8948, 1696.7184])
+a = np.array([1663.7069, 1603.4716, 1763.8948, 1696.7184], [1663.7069, 1603.4716, 1763.8948, 1696.7184])
 b = np.array([1662.7069, 1601.4716, 1761.8948, 1691.7184])
 
+print(np.delete(a, 0))
 # c = np.append([], a, axis=0)
 # print(c)
 # d = np.append(c, b, axis=0)
