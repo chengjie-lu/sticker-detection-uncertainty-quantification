@@ -4,6 +4,7 @@
 # @Author  : Chengjie
 # @File    : detection_offline.py
 # @Software: PyCharm
+import json
 import time
 
 import cv2 as cv
@@ -66,7 +67,7 @@ class Detection:
         logits = preds[0]['logits'].cpu().detach().numpy()
 
         # print('==============================')
-        print(np.delete(boxes, 0, axis=0))
+        # print(np.delete(boxes, 0, axis=0))
         # print(scores)
         # print(logits)
         return preds, boxes, labels, scores, logits
@@ -137,19 +138,15 @@ class Detection:
                 }
             })
             pred_id += 1
-        # print(pre_dict)
 
     def predict_multi(self, image_rz, image_og, n=10):
         predictions = {}
         pred_id = 0
         for i in range(n):
-            entropy_i = []
             preds, boxes, labels, scores, logits = self.predict(image_rz)
 
             for box, label, score, logit in zip(boxes, labels, scores, logits):
-                # if predictions == {}:
                 if i == 0:
-                    print(pred_id)
                     predictions.update({'pred_{}'.format(pred_id):
                         {
                             'box': [box.tolist()],
@@ -162,13 +159,18 @@ class Detection:
                 else:
                     self.insert(predictions, box, label, score, logit, pred_id)
 
-            # print(boxes)
-            # for pl in logits:
-            #     entropy_i.append(self.uq.entropy(pl))
-
             self.draw_boxes(boxes, labels, scores, image_og)
-        print(predictions)
-        cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
+
+        for key in predictions.keys():
+            logit_sample_trans = np.transpose(predictions[key]['logit'])
+            shannon_entropy = self.uq.calcu_entropy(np.mean(logit_sample_trans, axis=1))
+            mutual_info = self.uq.calcu_mutual_information(logit_sample_trans[0],
+                                                           logit_sample_trans[1],
+                                                           logit_sample_trans[2])
+            predictions[key].update({'entropy': shannon_entropy, 'mutual_info': mutual_info})
+
+        print(json.dumps(predictions, indent=4))
+        # cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
 
     def predict_multi_draw(self, image_rz, image_og, n=10):
         for i in range(n):
@@ -179,10 +181,10 @@ class Detection:
 
 if __name__ == '__main__':
     detector = Detection()
-    i_og, i_rz = detector.process_images(path="test_images/test.jpg")
+    i_og, i_rz = detector.process_images(path="test_images/IMG_3774.jpg")
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
-    detector.predict_multi(i_rz, i_og, n=3)
+    detector.predict_multi(i_rz, i_og, n=30)
 
 # score: softmax/sigmoid probability
