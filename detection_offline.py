@@ -167,7 +167,8 @@ class Detection:
             mutual_info = self.uq.calcu_mutual_information(logit_sample_trans[0],
                                                            logit_sample_trans[1],
                                                            logit_sample_trans[2])
-            predictions[key].update({'entropy': shannon_entropy, 'mutual_info': mutual_info})
+            mi = self.uq.calcu_mi(predictions[key]['logit'])
+            predictions[key].update({'entropy': shannon_entropy, 'mutual_info': mi})
 
         print(json.dumps(predictions, indent=4))
         # cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
@@ -185,6 +186,6 @@ if __name__ == '__main__':
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
-    detector.predict_multi(i_rz, i_og, n=30)
+    detector.predict_multi(i_rz, i_og, n=10)
 
 # score: softmax/sigmoid probability

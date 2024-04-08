@@ -25,6 +25,16 @@ class UQMetrics:
         self.shannon_entropy = round(-sum([p * (np.log(p + ets) / np.log(base)) for p in events]), 5)
         return self.shannon_entropy
 
+    def calcu_mi(self, events, ets=1e-15, base=2):
+        def calcu(e):
+            t = 0
+            for s in e:
+                t += -sum([p * (np.log(p + ets) / np.log(base)) for p in s])
+            return t / len(e)
+
+        self.mutual_information = self.calcu_entropy(events=np.mean(np.transpose(events), axis=1)) + calcu(events)
+        return self.mutual_information
+
     def calcu_mutual_information(self, X, Y, Z):
         """
         Calculate mutual information between three discrete random variables X, Y, and Z.
