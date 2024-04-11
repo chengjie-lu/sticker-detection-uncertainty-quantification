@@ -174,8 +174,8 @@ class Detection:
             #                                                logit_sample_trans[1],
             #                                                logit_sample_trans[2])
             mi = self.uq.calcu_mi(predictions[key]['logit'])
-            tv_cp = self.uq.calcu_tv(predictions[key]['center_point'])
-            tv_box = self.uq.calcu_tv(predictions[key]['box'])
+            tv_cp = self.uq.calcu_tv(predictions[key]['center_point'], tag='center_point')
+            tv_box = self.uq.calcu_tv(predictions[key]['box'], tag='bounding_box')
 
             predictions[key].update({'entropy': shannon_entropy,
                                      'mutual_info': mi,

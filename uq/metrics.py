@@ -12,6 +12,9 @@ class UQMetrics:
     def __init__(self):
         self.shannon_entropy = 0
         self.mutual_information = 0
+        self.total_var_center_point = 0
+        self.total_var_bounding_box = 0
+        self.prediction_surface = 0
         # pass
 
     def calcu_entropy(self, events, ets=1e-15, base=2):
@@ -35,16 +38,22 @@ class UQMetrics:
         self.mutual_information = self.calcu_entropy(events=np.mean(np.transpose(events), axis=1)) + calcu(events)
         return self.mutual_information
 
-    @staticmethod
-    def calcu_tv(matrix):
+    # @staticmethod
+    def calcu_tv(self, matrix, tag):
         """
         calculate total variance for a multi-dimensional matrix
         :param matrix:
+        :param tag:
         :return: total variance
         """
         trans = np.array(matrix).T
         cov_matrix = np.cov(trans)
-        return np.trace(cov_matrix)
+        if tag == 'bounding_box':
+            self.total_var_bounding_box = np.trace(cov_matrix)
+            return self.total_var_bounding_box
+        elif tag == 'center_point':
+            self.total_var_center_point = np.trace(cov_matrix)
+            return self.total_var_center_point
 
     def calcu_mutual_information(self, X, Y, Z):
         """
@@ -91,7 +100,7 @@ class UQMetrics:
     # mutual_info_score = mutual_information(X, Y, Z)
 
     def calcu_prediction_surface(self):
-        return
+        return self.prediction_surface
 
 
 if __name__ == '__main__':
