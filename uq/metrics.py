@@ -79,8 +79,11 @@ class UQMetrics:
     # X, Y, and Z are arrays containing discrete random variables
     # mutual_info_score = mutual_information(X, Y, Z)
 
+    def calcu_prediction_surface(self):
+        return
+
 
 if __name__ == '__main__':
-    uqmetrics = UQMetrics()
-    uqmetrics.calcu_entropy([0, 1])
-    print(uqmetrics.shannon_entropy)
+    uq_metrics = UQMetrics()
+    uq_metrics.calcu_entropy([0, 1])
+    print(uq_metrics.shannon_entropy)
