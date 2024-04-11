@@ -29,11 +29,22 @@ class UQMetrics:
         def calcu(e):
             t = 0
             for s in e:
-                t += -sum([p * (np.log(p + ets) / np.log(base)) for p in s])
+                t += sum([p * (np.log(p + ets) / np.log(base)) for p in s])
             return t / len(e)
 
         self.mutual_information = self.calcu_entropy(events=np.mean(np.transpose(events), axis=1)) + calcu(events)
         return self.mutual_information
+
+    @staticmethod
+    def calcu_tv(matrix):
+        """
+        calculate total variance for a multi-dimensional matrix
+        :param matrix:
+        :return: total variance
+        """
+        trans = np.array(matrix).T
+        cov_matrix = np.cov(trans)
+        return np.trace(cov_matrix)
 
     def calcu_mutual_information(self, X, Y, Z):
         """

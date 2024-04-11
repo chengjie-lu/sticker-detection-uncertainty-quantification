@@ -76,6 +76,7 @@ class Detection:
         scale = 1.0
         boxes = boxes / scale
 
+        center_3d_points = []
         labels = [key for value in labels for key, val in LABELS.items() if val == value]
         for box, label, score in zip(boxes, labels, scores):
             if self.show_bounding_box_sticker:
@@ -85,10 +86,10 @@ class Detection:
                     image_og = cv.putText(image_og, str(label + ' ' + str(score)[:5]), (int(box[0]), int(box[1])),
                                           cv.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3,
                                           cv.LINE_AA)  # (255,0,0) is blue
-
                     x = int((box[0] + box[2]) / 2)
                     y = int((box[1] + box[3]) / 2)
-                    center_3d_str = calc_3d_point(box, self.p)
+                    center_3d_str, center_3d = calc_3d_point(box, self.p)
+                    center_3d_points.append(center_3d)
                     # draw
                     image_og = cv.circle(image_og, (int(x), int(y)), 3, (0, 0, 255), -1)
                     image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
@@ -101,10 +102,10 @@ class Detection:
                     image_og = cv.putText(image_og, str(label + ' ' + str(score)[:5]), (int(box[0]), int(box[1])),
                                           cv.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3,
                                           cv.LINE_AA)  # (255,0,0) is blue
-
                     x = int((box[0] + box[2]) / 2)
                     y = int((box[1] + box[3]) / 2)
-                    center_3d_str = calc_3d_point(box, self.p)
+                    center_3d_str, center_3d = calc_3d_point(box, self.p)
+                    center_3d_points.append(center_3d)
                     # draw
                     image_og = cv.circle(image_og, (int(x), int(y)), 3, (0, 0, 255), -1)
                     image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
@@ -112,8 +113,10 @@ class Detection:
 
         cv.imwrite('./image_labeled/test_{}.png'.format(time.time()), image_og)
 
+        return center_3d_points
+
     @staticmethod
-    def insert(pre_dict, box, label, score, logit, pred_id):
+    def insert(pre_dict, box, label, score, logit, center_point, pred_id):
         similarity, insert_key = 0, None
         for key in pre_dict.keys():
             box1 = np.array(pre_dict[key]['box'][0]).reshape(1, -1)
@@ -128,13 +131,15 @@ class Detection:
             pre_dict[insert_key]['label'].append(label.tolist())
             pre_dict[insert_key]['score'].append(score.tolist())
             pre_dict[insert_key]['logit'].append(logit.tolist())
+            pre_dict[insert_key]['center_point'].append(center_point)
         else:
             pre_dict.update({'pred_{}'.format(pred_id):
                 {
                     'box': [box.tolist()],
                     'label': [label.tolist()],
                     'score': [score.tolist()],
-                    'logit': [logit.tolist()]
+                    'logit': [logit.tolist()],
+                    'center_point': [center_point]
                 }
             })
             pred_id += 1
@@ -144,31 +149,39 @@ class Detection:
         pred_id = 0
         for i in range(n):
             preds, boxes, labels, scores, logits = self.predict(image_rz)
+            center_points = self.draw_boxes(boxes, labels, scores, image_og)
+            # print(center_points)
 
-            for box, label, score, logit in zip(boxes, labels, scores, logits):
+            for box, label, score, logit, center_point in zip(boxes, labels, scores, logits, center_points):
                 if i == 0:
                     predictions.update({'pred_{}'.format(pred_id):
                         {
                             'box': [box.tolist()],
                             'label': [label.tolist()],
                             'score': [score.tolist()],
-                            'logit': [logit.tolist()]
+                            'logit': [logit.tolist()],
+                            'center_point': [center_point]
                         }
                     })
                     pred_id += 1
                 else:
-                    self.insert(predictions, box, label, score, logit, pred_id)
-
-            self.draw_boxes(boxes, labels, scores, image_og)
+                    self.insert(predictions, box, label, score, logit, center_point, pred_id)
 
         for key in predictions.keys():
             logit_sample_trans = np.transpose(predictions[key]['logit'])
             shannon_entropy = self.uq.calcu_entropy(np.mean(logit_sample_trans, axis=1))
-            mutual_info = self.uq.calcu_mutual_information(logit_sample_trans[0],
-                                                           logit_sample_trans[1],
-                                                           logit_sample_trans[2])
+            # mutual_info = self.uq.calcu_mutual_information(logit_sample_trans[0],
+            #                                                logit_sample_trans[1],
+            #                                                logit_sample_trans[2])
             mi = self.uq.calcu_mi(predictions[key]['logit'])
-            predictions[key].update({'entropy': shannon_entropy, 'mutual_info': mi})
+            tv_cp = self.uq.calcu_tv(predictions[key]['center_point'])
+            tv_box = self.uq.calcu_tv(predictions[key]['box'])
+
+            predictions[key].update({'entropy': shannon_entropy,
+                                     'mutual_info': mi,
+                                     'total_var_center_point:': tv_cp,
+                                     'total_var_box': tv_box
+                                     })
 
         print(json.dumps(predictions, indent=4))
         # cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(time.time()), image_og)
@@ -186,6 +199,6 @@ if __name__ == '__main__':
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
-    detector.predict_multi(i_rz, i_og, n=10)
+    detector.predict_multi(i_rz, i_og, n=100)
 
 # score: softmax/sigmoid probability

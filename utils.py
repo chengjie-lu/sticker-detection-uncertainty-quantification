@@ -156,4 +156,4 @@ def calc_3d_point(box, p):
     # convert to cm
     center_3d = center_3d * 100
     center_3d_str = str(str('%.2f' % center_3d[0]) + ',' + str('%.2f' % center_3d[1]))
-    return center_3d_str
+    return center_3d_str, center_3d.tolist()
