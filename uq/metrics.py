@@ -6,6 +6,8 @@
 # @Software: PyCharm
 
 import numpy as np
+import pandas as pd
+from scipy.spatial import ConvexHull
 
 
 class UQMetrics:
@@ -14,7 +16,7 @@ class UQMetrics:
         self.mutual_information = 0
         self.total_var_center_point = 0
         self.total_var_bounding_box = 0
-        self.prediction_surface = 0
+        self.prediction_surface = -1
         # pass
 
     def calcu_entropy(self, events, ets=1e-15, base=2):
@@ -99,11 +101,81 @@ class UQMetrics:
     # X, Y, and Z are arrays containing discrete random variables
     # mutual_info_score = mutual_information(X, Y, Z)
 
-    def calcu_prediction_surface(self):
+    def calcu_prediction_surface(self, boxes):
+        cluster_df = pd.DataFrame(boxes, columns=['x1', 'y1', 'x2', 'y2'])
+        self.prediction_surface = -1
+        sf_tmp = 0
+        if cluster_df.shape[0] > 2:
+            center_data = cluster_df[['x1', 'y1']].values
+            # print(center_data)
+            hull = ConvexHull(center_data)
+            sf_tmp += hull.area
+
+            center_data = cluster_df[['x2', 'y1']].values
+            # print(center_data)
+            hull = ConvexHull(center_data)
+            sf_tmp += hull.area
+
+            center_data = cluster_df[['x1', 'y2']].values
+            hull = ConvexHull(center_data)
+            sf_tmp += hull.area
+
+            center_data = cluster_df[['x2', 'y2']].values
+            hull = ConvexHull(center_data)
+            sf_tmp += hull.area
+
+            self.prediction_surface = sf_tmp
+
         return self.prediction_surface
+
+        # if len(boxes) <= 2:
+        #     return self.prediction_surface
+        #
+        # def create_corner_points():
+        #     corner_points = [[], [], [], []]
+        #     # print(corner_points)
+        #     for box in boxes:
+        #         corner_points[0].append([box[0], box[1]])
+        #         corner_points[1].append([box[2], box[3]])
+        #         corner_points[2].append([box[0], box[3]])
+        #         corner_points[3].append([box[2], box[1]])
+        #     return corner_points
+        #
+        # c_points = create_corner_points()
+        # # print(c_points)
+        #
+        # ps = 0
+        # for c_point in c_points:
+        #     # if len(c_point) > 2:
+        #     hull = ConvexHull(c_point)
+        #     self.prediction_surface += hull.area
+        # return self.prediction_surface
 
 
 if __name__ == '__main__':
     uq_metrics = UQMetrics()
-    uq_metrics.calcu_entropy([0, 1])
-    print(uq_metrics.shannon_entropy)
+    # uq_metrics.calcu_entropy([0, 1])
+    # print(uq_metrics.shannon_entropy)
+
+    bs = [
+        [
+            1013.3162231445312,
+            1310.352294921875,
+            1118.556884765625,
+            1385.857177734375
+        ],
+        [
+            1014.5834350585938,
+            1308.5045166015625,
+            1121.2974853515625,
+            1388.34228515625
+        ],
+        [
+            1015.1859130859375,
+            1308.117431640625,
+            1119.5179443359375,
+            1386.121826171875
+        ]
+    ]
+
+    uq_metrics.calcu_prediction_surface(bs)

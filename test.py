@@ -4,7 +4,10 @@
 # @Author  : Chengjie
 # @File    : test.py
 # @Software: PyCharm
+import random
+
 import torch
+from scipy.spatial import ConvexHull
 from torch import nn
 
 # m = nn.Dropout(p=0.2)
@@ -42,10 +45,50 @@ import numpy as np
 
 from sklearn.datasets import make_classification
 from sklearn.feature_selection import mutual_info_classif
-X, y = make_classification(
-    n_samples=100, n_features=10, n_informative=2, n_clusters_per_class=1,
-    shuffle=False, random_state=42
-)
+from sklearn.cluster import DBSCAN
+import pandas as pd
 
-print(X, y)
-mutual_info_classif(X, y)
+# X, y = make_classification(
+#     n_samples=100, n_features=10, n_informative=2, n_clusters_per_class=1,
+#     shuffle=False, random_state=42
+# )
+#
+# print(X, y)
+# mutual_info_classif(X, y)
+
+mc_locations = []
+for i in range(100):
+    mc_locations.append(np.array([random.random(), random.random(), random.random(), random.random()]))
+
+clustering = DBSCAN(eps=100, min_samples=2).fit(mc_locations)
+
+mc_locations = np.c_[mc_locations, clustering.labels_.ravel()]
+
+mc_locations_df = pd.DataFrame(data=mc_locations, columns=['x1', 'y1', 'x2', 'y2', 'label'])
+
+cluster_labels = np.unique(mc_locations[:, 4])
+total_cluster_surface = 0.0
+avg_surface = -1.0
+for cluster_label in cluster_labels:
+    print(cluster_label)
+    cluster_df = mc_locations_df.query('label == ' + str(cluster_label))
+    print(cluster_df.shape)
+    if cluster_df.shape[0] > 2:
+        center_data = cluster_df[['x1', 'y1']].values
+        hull = ConvexHull(center_data)
+        total_cluster_surface += hull.area
+
+        center_data = cluster_df[['x2', 'y1']].values
+        hull = ConvexHull(center_data)
+        total_cluster_surface += hull.area
+
+        center_data = cluster_df[['x1', 'y2']].values
+        hull = ConvexHull(center_data)
+        total_cluster_surface += hull.area
+
+        center_data = cluster_df[['x2', 'y2']].values
+        hull = ConvexHull(center_data)
+        total_cluster_surface += hull.area
+    avg_surface = total_cluster_surface / mc_locations.shape[0]
+
+print(avg_surface)
