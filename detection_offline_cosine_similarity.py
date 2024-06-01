@@ -212,7 +212,7 @@ class Detection:
 
 if __name__ == '__main__':
     detector = Detection()
-    i_og, i_rz = detector.process_images(path="test_images/image_open45.jpg")
+    i_og, i_rz = detector.process_images(path="test_images/gpt444.jpeg")
 
     # p, b, l, s = detector.predict(i_rz)
     # detector.draw_boxes(b, l, s, i_og)
