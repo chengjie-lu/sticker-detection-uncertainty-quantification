@@ -133,7 +133,7 @@ class Detection:
                    cv.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3,
                    cv.LINE_AA)  # (255,0,0) is blue
 
-    def predict_multi(self, image_rz, image_og, n=10):
+    def predict_multi(self, image_rz, image_og, image_n, n=10):
         predictions = {}
         pred_id = 0
 
@@ -185,10 +185,11 @@ class Detection:
             })
 
         # print(json.dumps(predictions, indent=4))
-        timestamp = str(int(time.time()))
-        with open('./image_labeled/output_{}.json'.format(timestamp), 'w') as f:
+        # timestamp = str(int(time.time()))
+        tag = image_n
+        with open('./image_labeled/output_{}.json'.format(tag), 'w') as f:
             json.dump(predictions, f, indent=4)
-        cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(timestamp), image_og)
+        cv.imwrite('./image_labeled/multi_boxes_{}.png'.format(tag), image_og)
 
     def predict_multi_draw(self, image_rz, image_og, n=10):
         for i in range(n):
@@ -198,8 +199,15 @@ class Detection:
 
 
 if __name__ == '__main__':
+    i_n = 'z_top'
     detector = Detection()
+<<<<<<< HEAD
     i_og, i_rz = detector.process_images(path="test_images/image_open45.jpg")
     detector.predict_multi(i_rz, i_og, n=30)
+=======
+    i_og, i_rz = detector.process_images(path="test_images/{}.jpg".format(i_n))
+    # detector.predict_multi_draw(i_rz, i_og, n=1)
+    detector.predict_multi(i_rz, i_og, i_n, n=40)
+>>>>>>> a0a4aa0331be5e88b8c3834a53e410bf590e9a98
 
 # score: softmax/sigmoid probability
