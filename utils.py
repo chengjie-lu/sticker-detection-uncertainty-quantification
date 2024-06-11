@@ -28,16 +28,8 @@ CONFIG = {
 # MODEL_NAME = 'retinanet_resnet50_fpn_v2'
 # CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
 
-# <<<<<<< HEAD
-# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
-#
-# MODEL_NAME = 'fasterrcnn_resnet50_fpn'
-#
-# CHECKPOINT_PATH = 'checkpoints/faster_rcnn/model_final.pth'
-# =======
 MODEL_NAME = 'fasterrcnn_resnet50_fpn'
 CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
-# >>>>>>> a0a4aa0331be5e88b8c3834a53e410bf590e9a98
 
 
 def load_camera_calibration():
