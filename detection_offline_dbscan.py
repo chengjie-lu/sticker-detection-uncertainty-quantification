@@ -199,10 +199,10 @@ class Detection:
 
 
 if __name__ == '__main__':
-    i_n = 'noisy_image_open43'
+    i_n = 'z_top'
     detector = Detection()
     i_og, i_rz = detector.process_images(path="test_images/{}.jpg".format(i_n))
-    # detector.predict_multi_draw(i_rz, i_og, n=2)
-    detector.predict_multi(i_rz, i_og, i_n, n=20)
+    # detector.predict_multi_draw(i_rz, i_og, n=1)
+    detector.predict_multi(i_rz, i_og, i_n, n=40)
 
 # score: softmax/sigmoid probability

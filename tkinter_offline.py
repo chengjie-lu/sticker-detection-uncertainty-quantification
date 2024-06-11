@@ -34,9 +34,10 @@ CONFIG = {
     "batch_size": BATCH_SIZE
 }
 
-MODEL_NAME = 'retinanet_resnet50_fpn_v2'
-
-CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+# MODEL_NAME = 'retinanet_resnet50_fpn_v2'
+# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+MODEL_NAME = 'fasterrcnn_resnet50_fpn'
+CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 
@@ -113,7 +114,7 @@ class App:
         with torch.no_grad():
             start = time.time()
             # image_og = grab_one_image(self.camera)
-            image_og = cv2.imread("test_images/test.jpg")
+            image_og = cv2.imread("test_images/z_top.jpg")
             # Undistorts images with the maps calculated in load_camera_calibration()
             image_og = cv.remap(image_og, self.dist_maps[0], self.dist_maps[1], cv.INTER_LINEAR)
             # image_og = cv.undistort(image_og, self.p, self.d)

@@ -25,9 +25,11 @@ CONFIG = {
     "batch_size": BATCH_SIZE
 }
 
-MODEL_NAME = 'retinanet_resnet50_fpn_v2'
+# MODEL_NAME = 'retinanet_resnet50_fpn_v2'
+# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
 
-CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+MODEL_NAME = 'fasterrcnn_resnet50_fpn'
+CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
 
 
 def load_camera_calibration():

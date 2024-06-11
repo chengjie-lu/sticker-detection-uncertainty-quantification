@@ -38,4 +38,4 @@ def calcu_avg_uq_metrics(f_n):
 
 
 if __name__ == '__main__':
-    calcu_avg_uq_metrics(f_n='output_noisy_image_open43.json')
+    calcu_avg_uq_metrics(f_n='./output_12_resized.json')
