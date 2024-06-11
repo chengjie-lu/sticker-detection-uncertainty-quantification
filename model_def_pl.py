@@ -98,8 +98,9 @@ class StickerDetector(pl.LightningModule):
     def __init__(self, num_classes=3, config=None, model_name='fasterrcnn_resnet50_fpn'):
         super(StickerDetector, self).__init__()
 
+        if config is None:
+            config = {'lr': 0.005, 'momentum': 0.9, 'weight_decay': 0.0005, 'batch_size': 6}
         self.first_batch = True
-
         learning_rate = config['lr']
         momentum = config['momentum']
         weight_decay = config['weight_decay']

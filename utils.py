@@ -28,6 +28,10 @@ CONFIG = {
 MODEL_NAME = 'retinanet_resnet50_fpn_v2'
 
 CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+#
+# MODEL_NAME = 'fasterrcnn_resnet50_fpn'
+#
+# CHECKPOINT_PATH = 'checkpoints/faster_rcnn/model_final.pth'
 
 
 def load_camera_calibration():
@@ -103,6 +107,7 @@ def load_model(runtime_type):
         model = StickerDetector(num_classes=NUM_CLASSES, config=CONFIG, model_name=MODEL_NAME)
         model = model.load_from_checkpoint(CHECKPOINT_PATH)
         # model.cuda()
+        # torch.save(model.state_dict(), './retinanet.pth')
         model.eval()
 
     return model

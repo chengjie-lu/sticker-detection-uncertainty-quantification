@@ -200,6 +200,6 @@ class Detection:
 if __name__ == '__main__':
     detector = Detection()
     i_og, i_rz = detector.process_images(path="test_images/image_open45.jpg")
-    detector.predict_multi(i_rz, i_og, n=100)
+    detector.predict_multi(i_rz, i_og, n=30)
 
 # score: softmax/sigmoid probability
