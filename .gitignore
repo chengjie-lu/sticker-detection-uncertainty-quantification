@@ -3,3 +3,4 @@ checkpoints/
 *.ckpt
 *.1
 *.onnx
+*.pth

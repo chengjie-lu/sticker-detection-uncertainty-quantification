@@ -201,13 +201,13 @@ class Detection:
 if __name__ == '__main__':
     i_n = 'z_top'
     detector = Detection()
-<<<<<<< HEAD
-    i_og, i_rz = detector.process_images(path="test_images/image_open45.jpg")
-    detector.predict_multi(i_rz, i_og, n=30)
-=======
+# <<<<<<< HEAD
+#     i_og, i_rz = detector.process_images(path="test_images/image_open45.jpg")
+#     detector.predict_multi(i_rz, i_og, n=30)
+# =======
     i_og, i_rz = detector.process_images(path="test_images/{}.jpg".format(i_n))
-    # detector.predict_multi_draw(i_rz, i_og, n=1)
-    detector.predict_multi(i_rz, i_og, i_n, n=40)
->>>>>>> a0a4aa0331be5e88b8c3834a53e410bf590e9a98
+    detector.predict_multi_draw(i_rz, i_og, n=1)
+    # detector.predict_multi(i_rz, i_og, i_n, n=40)
+# >>>>>>> a0a4aa0331be5e88b8c3834a53e410bf590e9a98
 
 # score: softmax/sigmoid probability
