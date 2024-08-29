@@ -22,7 +22,7 @@ response = requests.post(
 )
 
 if response.status_code == 200:
-    with open("./laptop.jpeg", 'wb') as file:
+    with open("laptop.jpeg", 'wb') as file:
         file.write(response.content)
 else:
     raise Exception(str(response.json()))
