@@ -6,3 +6,5 @@ checkpoints/
 *.pth
 experiment_results_v1/
 dataset/
+.idea/
+__pycache__/
