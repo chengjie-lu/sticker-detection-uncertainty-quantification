@@ -44,8 +44,6 @@ class BackboneWithFPN(nn.Module):
         if extra_blocks is None:
             extra_blocks = LastLevelMaxPool()
 
-        # self.dropout = nn.Dropout(p=0.2)
-
         self.body = IntermediateLayerGetter(backbone, return_layers=return_layers)
         self.fpn = FeaturePyramidNetwork(
             in_channels_list=in_channels_list,
@@ -56,13 +54,6 @@ class BackboneWithFPN(nn.Module):
         self.out_channels = out_channels
 
     def forward(self, x: Tensor) -> Dict[str, Tensor]:
-        # def apply_dropout(m):
-        #     if type(m) == nn.Dropout:
-        #         m.train()
-        #
-        # apply_dropout(self.dropout)
-        #
-        # x = self.dropout(x)
         x = self.body(x)
         x = self.fpn(x)
         return x

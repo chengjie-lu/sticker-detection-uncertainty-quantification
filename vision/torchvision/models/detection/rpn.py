@@ -158,6 +158,10 @@ class RegionProposalNetwork(torch.nn.Module):
         score_thresh: float = 0.0,
     ) -> None:
         super().__init__()
+
+        # self.dropout1 = nn.Dropout(p=0)
+        # self.dropout2 = nn.Dropout(p=0)
+
         self.anchor_generator = anchor_generator
         self.head = head
         self.box_coder = det_utils.BoxCoder(weights=(1.0, 1.0, 1.0, 1.0))
@@ -356,6 +360,14 @@ class RegionProposalNetwork(torch.nn.Module):
                 testing, it is an empty dict.
         """
         # RPN uses all feature maps that are available
+        # def apply_dropout(m):
+        #     if type(m) == nn.Dropout:
+        #         m.train()
+        # apply_dropout(self.dropout1)
+        # apply_dropout(self.dropout2)
+        # for key, value in features.items():
+        #     features[key] = self.dropout2(features[key])
+
         features = list(features.values())
         objectness, pred_bbox_deltas = self.head(features)
         anchors = self.anchor_generator(images, features)

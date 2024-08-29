@@ -21,7 +21,6 @@ from .anchor_utils import AnchorGenerator
 from .backbone_utils import _resnet_fpn_extractor, _validate_trainable_layers
 from .transform import GeneralizedRCNNTransform
 
-
 __all__ = [
     "RetinaNet",
     "RetinaNet_ResNet50_FPN_Weights",
@@ -41,7 +40,7 @@ def _sum(x: List[Tensor]) -> Tensor:
 def _v1_to_v2_weights(state_dict, prefix):
     for i in range(4):
         for type in ["weight", "bias"]:
-            old_key = f"{prefix}conv.{2*i}.{type}"
+            old_key = f"{prefix}conv.{2 * i}.{type}"
             new_key = f"{prefix}conv.{i}.0.{type}"
             if old_key in state_dict:
                 state_dict[new_key] = state_dict.pop(old_key)
@@ -98,12 +97,12 @@ class RetinaNetClassificationHead(nn.Module):
     _version = 2
 
     def __init__(
-        self,
-        in_channels,
-        num_anchors,
-        num_classes,
-        prior_probability=0.01,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            in_channels,
+            num_anchors,
+            num_classes,
+            prior_probability=0.01,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ):
         super().__init__()
 
@@ -131,14 +130,14 @@ class RetinaNetClassificationHead(nn.Module):
         self.BETWEEN_THRESHOLDS = det_utils.Matcher.BETWEEN_THRESHOLDS
 
     def _load_from_state_dict(
-        self,
-        state_dict,
-        prefix,
-        local_metadata,
-        strict,
-        missing_keys,
-        unexpected_keys,
-        error_msgs,
+            self,
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
     ):
         version = local_metadata.get("version", None)
 
@@ -193,7 +192,6 @@ class RetinaNetClassificationHead(nn.Module):
         all_cls_logits = []
 
         for features in x:
-
             cls_logits = self.conv(features)
             cls_logits = self.cls_logits(cls_logits)
 
@@ -246,14 +244,14 @@ class RetinaNetRegressionHead(nn.Module):
         self._loss_type = "l1"
 
     def _load_from_state_dict(
-        self,
-        state_dict,
-        prefix,
-        local_metadata,
-        strict,
-        missing_keys,
-        unexpected_keys,
-        error_msgs,
+            self,
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
     ):
         version = local_metadata.get("version", None)
 
@@ -277,7 +275,7 @@ class RetinaNetRegressionHead(nn.Module):
         bbox_regression = head_outputs["bbox_regression"]
 
         for targets_per_image, bbox_regression_per_image, anchors_per_image, matched_idxs_per_image in zip(
-            targets, bbox_regression, anchors, matched_idxs
+                targets, bbox_regression, anchors, matched_idxs
         ):
             # determine only the foreground indices, ignore the rest
             foreground_idxs_per_image = torch.where(matched_idxs_per_image >= 0)[0]
@@ -412,25 +410,25 @@ class RetinaNet(nn.Module):
     }
 
     def __init__(
-        self,
-        backbone,
-        num_classes,
-        # transform parameters
-        min_size=800,
-        max_size=1333,
-        image_mean=None,
-        image_std=None,
-        # Anchor parameters
-        anchor_generator=None,
-        head=None,
-        proposal_matcher=None,
-        score_thresh=0.05,
-        nms_thresh=0.5,
-        detections_per_img=300,
-        fg_iou_thresh=0.5,
-        bg_iou_thresh=0.4,
-        topk_candidates=1000,
-        **kwargs,
+            self,
+            backbone,
+            num_classes,
+            # transform parameters
+            min_size=800,
+            max_size=1333,
+            image_mean=None,
+            image_std=None,
+            # Anchor parameters
+            anchor_generator=None,
+            head=None,
+            proposal_matcher=None,
+            score_thresh=0.05,
+            nms_thresh=0.5,
+            detections_per_img=300,
+            fg_iou_thresh=0.5,
+            bg_iou_thresh=0.4,
+            topk_candidates=1000,
+            **kwargs,
     ):
         super().__init__()
         _log_api_usage_once(self)
@@ -438,13 +436,8 @@ class RetinaNet(nn.Module):
         """
         dropout
         """
-        self.dropout1 = nn.Dropout(p=0.3)
-        self.dropout2 = nn.Dropout(p=0.3)
-
-        # input = torch.randn(20, 16)
-        # print(input)
-        # output = self.dropout(input)
-        # print(output == input)
+        # self.dropout1 = nn.Dropout(p=0.1)
+        # self.dropout2 = nn.Dropout(p=0.1)
 
         if not hasattr(backbone, "out_channels"):
             raise ValueError(
@@ -519,9 +512,6 @@ class RetinaNet(nn.Module):
         class_logits = head_outputs["cls_logits"]
         box_regression = head_outputs["bbox_regression"]
 
-        # print(class_logits)
-        # print(box_regression)
-
         num_images = len(image_shapes)
 
         detections: List[Dict[str, Tensor]] = []
@@ -537,7 +527,7 @@ class RetinaNet(nn.Module):
             image_logits = []
 
             for box_regression_per_level, logits_per_level, anchors_per_level in zip(
-                box_regression_per_image, logits_per_image, anchors_per_image
+                    box_regression_per_image, logits_per_image, anchors_per_image
             ):
                 # print(logits_per_level)
                 num_classes = logits_per_level.shape[-1]
@@ -558,7 +548,7 @@ class RetinaNet(nn.Module):
                 anchor_idxs = torch.div(topk_idxs, num_classes, rounding_mode="floor")
                 labels_per_level = topk_idxs % num_classes
                 # print(torch.sigmoid(logits_per_level)[(topk_idxs/num_classes).int()])
-                logits_per_level = torch.sigmoid(logits_per_level)[(topk_idxs/num_classes).int()]
+                logits_per_level = torch.sigmoid(logits_per_level)[(topk_idxs / num_classes).int()]
 
                 boxes_per_level = self.box_coder.decode_single(
                     box_regression_per_level[anchor_idxs], anchors_per_level[anchor_idxs]
@@ -621,18 +611,6 @@ class RetinaNet(nn.Module):
 
         images_ = []
         for img in images:
-            """
-            dropout
-            """
-            def apply_dropout(m):
-                if type(m) == nn.Dropout:
-                    m.train()
-
-            apply_dropout(self.dropout1)
-            apply_dropout(self.dropout2)
-            # apply_dropout(self.dropout3)
-
-            img = self.dropout1(img)
             images_.append(img)
             val = img.shape[-2:]
             torch._assert(
@@ -663,9 +641,9 @@ class RetinaNet(nn.Module):
 
         # get the features from the backbone
         features = self.backbone(images.tensors)
-        # features = self.dropout2(features)
-        for key, value in features.items():
-            features[key] = self.dropout2(features[key])
+
+        # for key, value in features.items():
+        #   features[key] = self.dropout2(features[key])
 
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
@@ -769,13 +747,13 @@ class RetinaNet_ResNet50_FPN_V2_Weights(WeightsEnum):
     weights_backbone=("pretrained_backbone", ResNet50_Weights.IMAGENET1K_V1),
 )
 def retinanet_resnet50_fpn(
-    *,
-    weights: Optional[RetinaNet_ResNet50_FPN_Weights] = None,
-    progress: bool = True,
-    num_classes: Optional[int] = None,
-    weights_backbone: Optional[ResNet50_Weights] = ResNet50_Weights.IMAGENET1K_V1,
-    trainable_backbone_layers: Optional[int] = None,
-    **kwargs: Any,
+        *,
+        weights: Optional[RetinaNet_ResNet50_FPN_Weights] = None,
+        progress: bool = True,
+        num_classes: Optional[int] = None,
+        weights_backbone: Optional[ResNet50_Weights] = ResNet50_Weights.IMAGENET1K_V1,
+        trainable_backbone_layers: Optional[int] = None,
+        **kwargs: Any,
 ) -> RetinaNet:
     """
     Constructs a RetinaNet model with a ResNet-50-FPN backbone.
@@ -856,6 +834,7 @@ def retinanet_resnet50_fpn(
     backbone = _resnet_fpn_extractor(
         backbone, trainable_backbone_layers, returned_layers=[2, 3, 4], extra_blocks=LastLevelP6P7(256, 256)
     )
+
     model = RetinaNet(backbone, num_classes, **kwargs)
 
     if weights is not None:
@@ -872,13 +851,13 @@ def retinanet_resnet50_fpn(
     weights_backbone=("pretrained_backbone", ResNet50_Weights.IMAGENET1K_V1),
 )
 def retinanet_resnet50_fpn_v2(
-    *,
-    weights: Optional[RetinaNet_ResNet50_FPN_V2_Weights] = None,
-    progress: bool = True,
-    num_classes: Optional[int] = None,
-    weights_backbone: Optional[ResNet50_Weights] = None,
-    trainable_backbone_layers: Optional[int] = None,
-    **kwargs: Any,
+        *,
+        weights: Optional[RetinaNet_ResNet50_FPN_V2_Weights] = None,
+        progress: bool = True,
+        num_classes: Optional[int] = None,
+        weights_backbone: Optional[ResNet50_Weights] = None,
+        trainable_backbone_layers: Optional[int] = None,
+        **kwargs: Any,
 ) -> RetinaNet:
     """
     Constructs an improved RetinaNet model with a ResNet-50-FPN backbone.

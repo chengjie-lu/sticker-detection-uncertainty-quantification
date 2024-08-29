@@ -97,7 +97,6 @@ def make_images_for_tensorboard(pred, target):
 class StickerDetector(pl.LightningModule):
     def __init__(self, num_classes=3, config=None, model_name='fasterrcnn_resnet50_fpn'):
         super(StickerDetector, self).__init__()
-
         if config is None:
             config = {'lr': 0.005, 'momentum': 0.9, 'weight_decay': 0.0005, 'batch_size': 6}
         self.first_batch = True
@@ -142,7 +141,8 @@ class StickerDetector(pl.LightningModule):
         elif self.model_name == 'retinanet_resnet50_fpn':
             kwargs = {'score_thresh': 0.0005}
             self.model = torchvision.models.detection.retinanet_resnet50_fpn(weights='DEFAULT',
-                                                                             trainable_backbone_layers=5)
+                                                                             trainable_backbone_layers=5,
+                                                                             )
             num_anchors = self.model.head.classification_head.num_anchors
             out_channgels = self.model.backbone.out_channels
             self.model.head.classification_head = RetinaNetClassificationHead(in_channels=out_channgels,
@@ -173,8 +173,9 @@ class StickerDetector(pl.LightningModule):
         # self.logger.experiment.add_graph(script_model, prototype_array)
 
         # self.map_metric = MeanAveragePrecision(box_format='xywh')
-        self.map_metric = torchmetrics.MAP()
-        self.accuracy_metric = torchmetrics.Accuracy(num_classes=num_classes - 1)
+
+        # self.map_metric = torchmetrics.MAP()
+        # self.accuracy_metric = torchmetrics.Accuracy(num_classes=num_classes - 1)
 
         hparams = {
             'learning_rate': learning_rate,

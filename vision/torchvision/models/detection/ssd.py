@@ -18,7 +18,6 @@ from .anchor_utils import DefaultBoxGenerator
 from .backbone_utils import _validate_trainable_layers
 from .transform import GeneralizedRCNNTransform
 
-
 __all__ = [
     "SSD300_VGG16_Weights",
     "ssd300_vgg16",
@@ -60,8 +59,19 @@ class SSDHead(nn.Module):
         super().__init__()
         self.classification_head = SSDClassificationHead(in_channels, num_anchors, num_classes)
         self.regression_head = SSDRegressionHead(in_channels, num_anchors)
+        # f = open('/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/checkpoints/dropout.txt', 'r')
+        # dropout = float(f.read())
+        # f.close()
+        self.dropout = None
+
+    @staticmethod
+    def apply_dropout(m):
+        if type(m) == nn.Dropout:
+            m.train()
 
     def forward(self, x: List[Tensor]) -> Dict[str, Tensor]:
+        self.apply_dropout(self.dropout)
+        x = [self.dropout(t) for t in x]
         return {
             "bbox_regression": self.regression_head(x),
             "cls_logits": self.classification_head(x),
@@ -184,21 +194,21 @@ class SSD(nn.Module):
     }
 
     def __init__(
-        self,
-        backbone: nn.Module,
-        anchor_generator: DefaultBoxGenerator,
-        size: Tuple[int, int],
-        num_classes: int,
-        image_mean: Optional[List[float]] = None,
-        image_std: Optional[List[float]] = None,
-        head: Optional[nn.Module] = None,
-        score_thresh: float = 0.01,
-        nms_thresh: float = 0.45,
-        detections_per_img: int = 200,
-        iou_thresh: float = 0.5,
-        topk_candidates: int = 400,
-        positive_fraction: float = 0.25,
-        **kwargs: Any,
+            self,
+            backbone: nn.Module,
+            anchor_generator: DefaultBoxGenerator,
+            size: Tuple[int, int],
+            num_classes: int,
+            image_mean: Optional[List[float]] = None,
+            image_std: Optional[List[float]] = None,
+            head: Optional[nn.Module] = None,
+            score_thresh: float = 0.01,
+            nms_thresh: float = 0.45,
+            detections_per_img: int = 200,
+            iou_thresh: float = 0.5,
+            topk_candidates: int = 400,
+            positive_fraction: float = 0.25,
+            **kwargs: Any,
     ):
         super().__init__()
         _log_api_usage_once(self)
@@ -245,7 +255,7 @@ class SSD(nn.Module):
 
     @torch.jit.unused
     def eager_outputs(
-        self, losses: Dict[str, Tensor], detections: List[Dict[str, Tensor]]
+            self, losses: Dict[str, Tensor], detections: List[Dict[str, Tensor]]
     ) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         if self.training:
             return losses
@@ -253,11 +263,11 @@ class SSD(nn.Module):
         return detections
 
     def compute_loss(
-        self,
-        targets: List[Dict[str, Tensor]],
-        head_outputs: Dict[str, Tensor],
-        anchors: List[Tensor],
-        matched_idxs: List[Tensor],
+            self,
+            targets: List[Dict[str, Tensor]],
+            head_outputs: Dict[str, Tensor],
+            anchors: List[Tensor],
+            matched_idxs: List[Tensor],
     ) -> Dict[str, Tensor]:
         bbox_regression = head_outputs["bbox_regression"]
         cls_logits = head_outputs["cls_logits"]
@@ -267,11 +277,11 @@ class SSD(nn.Module):
         bbox_loss = []
         cls_targets = []
         for (
-            targets_per_image,
-            bbox_regression_per_image,
-            cls_logits_per_image,
-            anchors_per_image,
-            matched_idxs_per_image,
+                targets_per_image,
+                bbox_regression_per_image,
+                cls_logits_per_image,
+                anchors_per_image,
+                matched_idxs_per_image,
         ) in zip(targets, bbox_regression, cls_logits, anchors, matched_idxs):
             # produce the matching between boxes and targets
             foreground_idxs_per_image = torch.where(matched_idxs_per_image >= 0)[0]
@@ -324,7 +334,7 @@ class SSD(nn.Module):
         }
 
     def forward(
-        self, images: List[Tensor], targets: Optional[List[Dict[str, Tensor]]] = None
+            self, images: List[Tensor], targets: Optional[List[Dict[str, Tensor]]] = None
     ) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]:
         if self.training:
             if targets is None:
@@ -412,7 +422,7 @@ class SSD(nn.Module):
         return self.eager_outputs(losses, detections)
 
     def postprocess_detections(
-        self, head_outputs: Dict[str, Tensor], image_anchors: List[Tensor], image_shapes: List[Tuple[int, int]]
+            self, head_outputs: Dict[str, Tensor], image_anchors: List[Tensor], image_shapes: List[Tuple[int, int]]
     ) -> List[Dict[str, Tensor]]:
         bbox_regression = head_outputs["bbox_regression"]
         pred_scores = F.softmax(head_outputs["cls_logits"], dim=-1)
@@ -422,42 +432,56 @@ class SSD(nn.Module):
 
         detections: List[Dict[str, Tensor]] = []
 
+        # print('/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/vision/torchvision/models/detection/ssd.py')
+
         for boxes, scores, anchors, image_shape in zip(bbox_regression, pred_scores, image_anchors, image_shapes):
             boxes = self.box_coder.decode_single(boxes, anchors)
             boxes = box_ops.clip_boxes_to_image(boxes, image_shape)
 
+            logits = scores
             image_boxes = []
             image_scores = []
             image_labels = []
+            image_logits = []
+
             for label in range(1, num_classes):
                 score = scores[:, label]
 
                 keep_idxs = score > self.score_thresh
                 score = score[keep_idxs]
                 box = boxes[keep_idxs]
+                logit = logits[keep_idxs]
 
                 # keep only topk scoring predictions
                 num_topk = det_utils._topk_min(score, self.topk_candidates, 0)
                 score, idxs = score.topk(num_topk)
                 box = box[idxs]
+                logit = logit[(idxs / (num_classes - 2)).int()]
+                # print(score)
+                # print(logit)
 
                 image_boxes.append(box)
                 image_scores.append(score)
                 image_labels.append(torch.full_like(score, fill_value=label, dtype=torch.int64, device=device))
+                image_logits.append(logit)
 
             image_boxes = torch.cat(image_boxes, dim=0)
             image_scores = torch.cat(image_scores, dim=0)
             image_labels = torch.cat(image_labels, dim=0)
+            image_logits = torch.cat(image_logits, dim=0)
 
             # non-maximum suppression
             keep = box_ops.batched_nms(image_boxes, image_scores, image_labels, self.nms_thresh)
             keep = keep[: self.detections_per_img]
+            # print(image_scores[keep])
+            # print(image_logits[keep])
 
             detections.append(
                 {
                     "boxes": image_boxes[keep],
                     "scores": image_scores[keep],
                     "labels": image_labels[keep],
+                    "logits": image_logits[keep]
                 }
             )
         return detections
@@ -576,13 +600,13 @@ def _vgg_extractor(backbone: VGG, highres: bool, trainable_layers: int):
     weights_backbone=("pretrained_backbone", VGG16_Weights.IMAGENET1K_FEATURES),
 )
 def ssd300_vgg16(
-    *,
-    weights: Optional[SSD300_VGG16_Weights] = None,
-    progress: bool = True,
-    num_classes: Optional[int] = None,
-    weights_backbone: Optional[VGG16_Weights] = VGG16_Weights.IMAGENET1K_FEATURES,
-    trainable_backbone_layers: Optional[int] = None,
-    **kwargs: Any,
+        *,
+        weights: Optional[SSD300_VGG16_Weights] = None,
+        progress: bool = True,
+        num_classes: Optional[int] = None,
+        weights_backbone: Optional[VGG16_Weights] = VGG16_Weights.IMAGENET1K_FEATURES,
+        trainable_backbone_layers: Optional[int] = None,
+        **kwargs: Any,
 ) -> SSD:
     """The SSD300 model is based on the `SSD: Single Shot MultiBox Detector
     <https://arxiv.org/abs/1512.02325>`_ paper.

@@ -25,11 +25,24 @@ CONFIG = {
     "batch_size": BATCH_SIZE
 }
 
-# MODEL_NAME = 'retinanet_resnet50_fpn_v2'
-# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+# MODEL_NAME = 'retinanet_resnet50_fpn'
+# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn/epoch=30-step=7471.ckpt'
 
-MODEL_NAME = 'fasterrcnn_resnet50_fpn'
-CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
+# MODEL_NAME = 'retinanet_resnet50_fpn_v2'
+# CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2/epoch=31-step=7712.ckpt'
+#
+# MODEL_NAME = 'fasterrcnn_resnet50_fpn'
+# CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
+
+MODEL_NAME = 'fasterrcnn_resnet50_fpn_v2'
+CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt'
+
+
+# MODEL_NAME = 'ssd300_vgg16'
+# CHECKPOINT_PATH = 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt'
+#
+# MODEL_NAME = 'ssdlite320_mobilenet_v3_large'
+# CHECKPOINT_PATH = 'checkpoints/ssdlite320_mobilenet_v3_large/epoch=18-step=9139.ckpt'
 
 
 def load_camera_calibration():
@@ -77,14 +90,15 @@ def init_camera():
     return camera
 
 
-def load_model(runtime_type):
+def load_model(runtime_type, model_name=MODEL_NAME, checkout_path=CHECKPOINT_PATH):
     print("Using CUDA: ", torch.cuda.is_available())
 
     model = None
     if runtime_type == 'onnx':
         # for onnx model
         # export_model_path = "retinanet_resnet50_fpn_v2_aug.onnx"
-        export_model_path = "./checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/retinanet_resnet50_fpn_v2_aug.onnx"
+        export_model_path = "./checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints" \
+                            "/retinanet_resnet50_fpn_v2_aug.onnx"
 
         assert 'CUDAExecutionProvider' in onnxruntime.get_available_providers()
         # print(onnxruntime.get_available_providers())
@@ -102,10 +116,10 @@ def load_model(runtime_type):
 
     elif runtime_type == 'normal':
         # for pytorch model
-        model = StickerDetector(num_classes=NUM_CLASSES, config=CONFIG, model_name=MODEL_NAME)
-        model = model.load_from_checkpoint(CHECKPOINT_PATH)
+        model = StickerDetector(num_classes=NUM_CLASSES, config=CONFIG, model_name=model_name)
+        model = model.load_from_checkpoint(checkpoint_path=checkout_path)
+
         # model.cuda()
-        # torch.save(model.state_dict(), './retinanet.pth')
         model.eval()
 
     return model

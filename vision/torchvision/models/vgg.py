@@ -49,6 +49,7 @@ class VGG(nn.Module):
             nn.Dropout(p=dropout),
             nn.Linear(4096, num_classes),
         )
+        self.dropout = 0
         if init_weights:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):

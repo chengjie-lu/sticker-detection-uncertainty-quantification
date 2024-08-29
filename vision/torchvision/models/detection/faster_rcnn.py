@@ -365,7 +365,6 @@ class FastRCNNPredictor(nn.Module):
         x = x.flatten(start_dim=1)
         scores = self.cls_score(x)
         bbox_deltas = self.bbox_pred(x)
-
         return scores, bbox_deltas
 
 
@@ -534,6 +533,12 @@ def fasterrcnn_resnet50_fpn(
     Args:
         weights (:class:`~torchvision.models.detection.FasterRCNN_ResNet50_FPN_Weights`, optional): The
             pretrained weights to use. See
+            :param trainable_backbone_layers:
+            :param num_classes:
+            :param progress:
+            :param weights:
+            :param weights_backbone:
+            :param dropout:
             :class:`~torchvision.models.detection.FasterRCNN_ResNet50_FPN_Weights` below for
             more details, and possible values. By default, no pre-trained
             weights are used.

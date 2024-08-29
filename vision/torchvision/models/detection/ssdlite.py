@@ -85,8 +85,19 @@ class SSDLiteHead(nn.Module):
         super().__init__()
         self.classification_head = SSDLiteClassificationHead(in_channels, num_anchors, num_classes, norm_layer)
         self.regression_head = SSDLiteRegressionHead(in_channels, num_anchors, norm_layer)
+        # f = open('/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/checkpoints/dropout.txt', 'r')
+        # dropout = float(f.read())
+        # f.close()
+        self.dropout = None
+
+    @staticmethod
+    def apply_dropout(m):
+        if type(m) == nn.Dropout:
+            m.train()
 
     def forward(self, x: List[Tensor]) -> Dict[str, Tensor]:
+        self.apply_dropout(self.dropout)
+        x = [self.dropout(t) for t in x]
         return {
             "bbox_regression": self.regression_head(x),
             "cls_logits": self.classification_head(x),

@@ -36,8 +36,18 @@ CONFIG = {
 
 # MODEL_NAME = 'retinanet_resnet50_fpn_v2'
 # CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
-MODEL_NAME = 'fasterrcnn_resnet50_fpn'
-CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
+
+# MODEL_NAME = 'fasterrcnn_resnet50_fpn'
+# CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
+
+# MODEL_NAME = 'fasterrcnn_resnet50_fpn_v2'
+# CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt'
+
+# MODEL_NAME = 'ssd300_vgg16'
+# CHECKPOINT_PATH = 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt'
+
+# MODEL_NAME = 'ssdlite320_mobilenet_v3_large'
+# CHECKPOINT_PATH = 'checkpoints/ssdlite320_mobilenet_v3_large/epoch=18-step=9139.ckpt'
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 
@@ -162,8 +172,8 @@ class App:
                         center_3d_str = calc_3d_point(box, self.p)
                         # draw
                         image_og = cv.circle(image_og, (int(x), int(y)), 3, (0, 0, 255), -1)
-                        image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
-                                              (0, 0, 255), 2, cv.LINE_AA)
+                        # image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
+                        #                       (0, 0, 255), 2, cv.LINE_AA)
 
                 if self.show_bounding_box_logo:
                     if label == 'Logo':
@@ -178,8 +188,8 @@ class App:
                         center_3d_str = calc_3d_point(box, self.p)
                         # draw
                         image_og = cv.circle(image_og, (int(x), int(y)), 3, (0, 0, 255), -1)
-                        image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
-                                              (0, 0, 255), 2, cv.LINE_AA)
+                        # image_og = cv.putText(image_og, center_3d_str, (int(x), int(y)), cv.FONT_HERSHEY_SIMPLEX, 2,
+                        #                       (0, 0, 255), 2, cv.LINE_AA)
 
             # end time
             fps = 1 / (time.time() - start)

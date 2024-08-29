@@ -7,17 +7,31 @@
 
 import numpy as np
 import pandas as pd
+import torch
 from scipy.spatial import ConvexHull
 
 
 class UQMetrics:
     def __init__(self):
+        self.variation_ratio = 0
         self.shannon_entropy = 0
         self.mutual_information = 0
         self.total_var_center_point = 0
         self.total_var_bounding_box = 0
         self.prediction_surface = -1
+        self.hull = []
+        self.box = []
         # pass
+
+    def cal_vr(self, events):
+        """
+        Variation Ratio Calculation
+        :return:
+        """
+        y = torch.argmax(torch.Tensor(events), dim=1).numpy()
+        unique, counts = np.unique(y, return_counts=True)
+        self.variation_ratio = 1 - np.max(counts) / np.sum(counts)
+        return self.variation_ratio
 
     def calcu_entropy(self, events, ets=1e-15, base=2):
         """
@@ -56,6 +70,26 @@ class UQMetrics:
         elif tag == 'center_point':
             self.total_var_center_point = np.trace(cov_matrix)
             return self.total_var_center_point
+
+    def calcu_tv_2(self, matrix, tag):
+        """
+        calculate total variance for a multi-dimensional matrix
+        :param matrix:
+        :param tag:
+        :return: total variance
+        """
+        import statistics
+
+        self.total_var_bounding_box = 0
+        trans = np.array(matrix).T
+
+        if tag == 'bounding_box':
+            for m in trans:
+                self.total_var_bounding_box += np.var(m)
+
+            # if self.total_var_bounding_box > 2000:
+            #     print(trans)
+            return self.total_var_bounding_box
 
     def calcu_mutual_information(self, X, Y, Z):
         """
@@ -104,27 +138,44 @@ class UQMetrics:
     def calcu_prediction_surface(self, boxes):
         cluster_df = pd.DataFrame(boxes, columns=['x1', 'y1', 'x2', 'y2'])
         self.prediction_surface = -1
+        self.hull = []
         sf_tmp = 0
         if cluster_df.shape[0] > 2:
-            center_data = cluster_df[['x1', 'y1']].values
-            # print(center_data)
-            hull = ConvexHull(center_data)
-            sf_tmp += hull.area
+            try:
+                center_data = cluster_df[['x1', 'y1']].values
+                hull = ConvexHull(center_data)
+                self.hull.append(hull)
+                sf_tmp += hull.area
 
-            center_data = cluster_df[['x2', 'y1']].values
-            # print(center_data)
-            hull = ConvexHull(center_data)
-            sf_tmp += hull.area
+                center_data = cluster_df[['x2', 'y1']].values
+                # print(center_data)
+                hull = ConvexHull(center_data)
+                self.hull.append(hull)
+                sf_tmp += hull.area
 
-            center_data = cluster_df[['x1', 'y2']].values
-            hull = ConvexHull(center_data)
-            sf_tmp += hull.area
+                center_data = cluster_df[['x1', 'y2']].values
+                hull = ConvexHull(center_data)
+                self.hull.append(hull)
+                sf_tmp += hull.area
 
-            center_data = cluster_df[['x2', 'y2']].values
-            hull = ConvexHull(center_data)
-            sf_tmp += hull.area
+                center_data = cluster_df[['x2', 'y2']].values
+                hull = ConvexHull(center_data)
+                self.hull.append(hull)
+                sf_tmp += hull.area
 
-            self.prediction_surface = sf_tmp
+                # import matplotlib.pyplot as plt
+                # # plt.plot(center_data[:, 0], center_data[:, 1], 'o')
+                # img = plt.imread("/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/
+                # sticker_detector/dataset/sdimg/adv_run_1/image_stable_diffusion_67.jpg")
+                # fig, ax = plt.subplots()
+                # ax.imshow(img)
+                # for simplex in hull.simplices:
+                #     ax.plot(center_data[simplex, 0], center_data[simplex, 1], 'k-')
+                # plt.show()
+                # plt.savefig('./f.jpg')
+                self.prediction_surface = sf_tmp
+            except:
+                self.prediction_surface = -1
 
         return self.prediction_surface
 
@@ -157,8 +208,7 @@ if __name__ == '__main__':
     uq_metrics.calcu_entropy([1/3, 1/3, 1/3])
     print(uq_metrics.shannon_entropy)
 
-    print(np.log(3) / np.log(2))
-
+    print(uq_metrics.cal_vr(events=[]))
     # bs = [
     #     [
     #         1013.3162231445312,

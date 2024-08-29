@@ -1,5 +1,7 @@
+import os
 from collections import OrderedDict
 from typing import Callable, Dict, List, Optional, Tuple
+from stat import S_IREAD, S_IRGRP, S_IROTH, S_IWUSR
 
 import torch.nn.functional as F
 from torch import nn, Tensor
@@ -25,10 +27,10 @@ class ExtraFPNBlock(nn.Module):
     """
 
     def forward(
-        self,
-        results: List[Tensor],
-        x: List[Tensor],
-        names: List[str],
+            self,
+            results: List[Tensor],
+            x: List[Tensor],
+            names: List[str],
     ) -> Tuple[List[Tensor], List[str]]:
         pass
 
@@ -74,12 +76,13 @@ class FeaturePyramidNetwork(nn.Module):
 
     _version = 2
 
+
     def __init__(
-        self,
-        in_channels_list: List[int],
-        out_channels: int,
-        extra_blocks: Optional[ExtraFPNBlock] = None,
-        norm_layer: Optional[Callable[..., nn.Module]] = None,
+            self,
+            in_channels_list: List[int],
+            out_channels: int,
+            extra_blocks: Optional[ExtraFPNBlock] = None,
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
     ):
         super().__init__()
         _log_api_usage_once(self)
@@ -109,15 +112,24 @@ class FeaturePyramidNetwork(nn.Module):
                 raise TypeError(f"extra_blocks should be of type ExtraFPNBlock not {type(extra_blocks)}")
         self.extra_blocks = extra_blocks
 
+        # dropout_f = '/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/checkpoints' \
+        #             '/dropout.txt'
+        # f = open(dropout_f, 'r')
+        # dropout = float(f.read())
+        # f.close()
+        # os.chmod(f_n, S_IWUSR | S_IREAD)
+        # print(self.__class__.d)
+        self.dropout = None
+
     def _load_from_state_dict(
-        self,
-        state_dict,
-        prefix,
-        local_metadata,
-        strict,
-        missing_keys,
-        unexpected_keys,
-        error_msgs,
+            self,
+            state_dict,
+            prefix,
+            local_metadata,
+            strict,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
     ):
         version = local_metadata.get("version", None)
 
@@ -141,11 +153,18 @@ class FeaturePyramidNetwork(nn.Module):
             error_msgs,
         )
 
+    @staticmethod
+    def apply_dropout(m):
+        if type(m) == nn.Dropout:
+            m.train()
+
     def get_result_from_inner_blocks(self, x: Tensor, idx: int) -> Tensor:
         """
         This is equivalent to self.inner_blocks[idx](x),
         but torchscript doesn't support this yet
         """
+
+        self.apply_dropout(self.dropout)
         num_blocks = len(self.inner_blocks)
         if idx < 0:
             idx += num_blocks
@@ -153,6 +172,7 @@ class FeaturePyramidNetwork(nn.Module):
         for i, module in enumerate(self.inner_blocks):
             if i == idx:
                 out = module(x)
+                out = self.dropout(out)
         return out
 
     def get_result_from_layer_blocks(self, x: Tensor, idx: int) -> Tensor:
@@ -160,6 +180,8 @@ class FeaturePyramidNetwork(nn.Module):
         This is equivalent to self.layer_blocks[idx](x),
         but torchscript doesn't support this yet
         """
+        self.apply_dropout(self.dropout)
+
         num_blocks = len(self.layer_blocks)
         if idx < 0:
             idx += num_blocks
@@ -167,6 +189,7 @@ class FeaturePyramidNetwork(nn.Module):
         for i, module in enumerate(self.layer_blocks):
             if i == idx:
                 out = module(x)
+                out = self.dropout(out)
         return out
 
     def forward(self, x: Dict[str, Tensor]) -> Dict[str, Tensor]:
@@ -183,6 +206,8 @@ class FeaturePyramidNetwork(nn.Module):
         # unpack OrderedDict into two lists for easier handling
         names = list(x.keys())
         x = list(x.values())
+
+        self.apply_dropout(self.dropout)
 
         last_inner = self.get_result_from_inner_blocks(x[-1], -1)
         results = []
@@ -210,10 +235,10 @@ class LastLevelMaxPool(ExtraFPNBlock):
     """
 
     def forward(
-        self,
-        x: List[Tensor],
-        y: List[Tensor],
-        names: List[str],
+            self,
+            x: List[Tensor],
+            y: List[Tensor],
+            names: List[str],
     ) -> Tuple[List[Tensor], List[str]]:
         names.append("pool")
         # Use max pooling to simulate stride 2 subsampling
@@ -236,10 +261,10 @@ class LastLevelP6P7(ExtraFPNBlock):
         self.use_P5 = in_channels == out_channels
 
     def forward(
-        self,
-        p: List[Tensor],
-        c: List[Tensor],
-        names: List[str],
+            self,
+            p: List[Tensor],
+            c: List[Tensor],
+            names: List[str],
     ) -> Tuple[List[Tensor], List[str]]:
         p5, c5 = p[-1], c[-1]
         x = p5 if self.use_P5 else c5

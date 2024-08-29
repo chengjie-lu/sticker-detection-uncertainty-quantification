@@ -61,9 +61,11 @@ class IntermediateLayerGetter(nn.ModuleDict):
                 break
 
         super().__init__(layers)
+
         self.return_layers = orig_return_layers
 
     def forward(self, x):
+
         out = OrderedDict()
         for name, module in self.items():
             x = module(x)

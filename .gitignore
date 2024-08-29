@@ -4,3 +4,5 @@ checkpoints/
 *.1
 *.onnx
 *.pth
+experiment_results_v1/
+dataset/
