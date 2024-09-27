@@ -20,11 +20,9 @@ response = requests.post(
     f"{api_host}/v1/generation/{engine_id}/image-to-image",
     headers={
         "Accept": "application/json",
-        "Authorization": f"Bearer sk-6mfIdTkpqQSLLxZczdez6hTVRxE3BHCH8CK3UIF1L1qLuCpY"
+        "Authorization": f"Bearer sk-6mfIdTkpqQSLLxZczdez6hTVRxE3BHCH8CK3UIF1L1qLuCpY",
     },
-    files={
-        "init_image": open("../test_images/vision_model/laptop.jpeg", "rb")
-    },
+    files={"init_image": open("../test_images/vision_model/laptop.jpeg", "rb")},
     data={
         "image_strength": 0.35,
         "init_image_mode": "IMAGE_STRENGTH",
@@ -32,7 +30,7 @@ response = requests.post(
         "cfg_scale": 7,
         "samples": 1,
         "steps": 30,
-    }
+    },
 )
 
 if response.status_code != 200:

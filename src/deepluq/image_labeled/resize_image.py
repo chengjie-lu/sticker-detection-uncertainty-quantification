@@ -37,11 +37,11 @@ def image_difference(i_1, i_2, i):
 
     # print(np.sum(result))
     # Save the result
-    cv2.imwrite('subtracted_image_{}.jpg'.format(i), result * 100)
+    cv2.imwrite("subtracted_image_{}.jpg".format(i), result * 100)
 
 
-if __name__ == '__main__':
-    file_n = '../test_images/subtracted_image_97.jpg'
+if __name__ == "__main__":
+    file_n = "../test_images/subtracted_image_97.jpg"
     # new_fn = 'image_stable_diffusion_97_per.jpg'
     # image_difference(file_n, new_fn, 97)
-    crop_sticker(file_n, 'diff_97.jpg')
+    crop_sticker(file_n, "diff_97.jpg")

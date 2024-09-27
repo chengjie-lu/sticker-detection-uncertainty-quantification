@@ -41,7 +41,9 @@ class UQMetrics:
         :param base:
         :return:
         """
-        self.shannon_entropy = round(-sum([p * (np.log(p + ets) / np.log(base)) for p in events]), 5)
+        self.shannon_entropy = round(
+            -sum([p * (np.log(p + ets) / np.log(base)) for p in events]), 5
+        )
         return self.shannon_entropy
 
     def calcu_mi(self, events, ets=1e-15, base=2):
@@ -51,7 +53,9 @@ class UQMetrics:
                 t += sum([p * (np.log(p + ets) / np.log(base)) for p in s])
             return t / len(e)
 
-        self.mutual_information = self.calcu_entropy(events=np.mean(np.transpose(events), axis=1)) + calcu(events)
+        self.mutual_information = self.calcu_entropy(
+            events=np.mean(np.transpose(events), axis=1)
+        ) + calcu(events)
         return self.mutual_information
 
     # @staticmethod
@@ -64,10 +68,10 @@ class UQMetrics:
         """
         trans = np.array(matrix).T
         cov_matrix = np.cov(trans)
-        if tag == 'bounding_box':
+        if tag == "bounding_box":
             self.total_var_bounding_box = np.trace(cov_matrix)
             return self.total_var_bounding_box
-        elif tag == 'center_point':
+        elif tag == "center_point":
             self.total_var_center_point = np.trace(cov_matrix)
             return self.total_var_center_point
 
@@ -83,7 +87,7 @@ class UQMetrics:
         self.total_var_bounding_box = 0
         trans = np.array(matrix).T
 
-        if tag == 'bounding_box':
+        if tag == "bounding_box":
             for m in trans:
                 self.total_var_bounding_box += np.var(m)
 
@@ -112,8 +116,9 @@ class UQMetrics:
         for i, x in enumerate(unique_X):
             for j, y in enumerate(unique_Y):
                 for k, z in enumerate(unique_Z):
-                    joint_probs[i, j, k] = np.sum(np.logical_and(np.logical_and(X == x, Y == y), Z == z)) / float(
-                        len(X))
+                    joint_probs[i, j, k] = np.sum(
+                        np.logical_and(np.logical_and(X == x, Y == y), Z == z)
+                    ) / float(len(X))
 
         # Compute marginal probability distributions
         px = np.sum(joint_probs, axis=(1, 2))
@@ -126,7 +131,9 @@ class UQMetrics:
             for j, y in enumerate(unique_Y):
                 for k, z in enumerate(unique_Z):
                     if joint_probs[i, j, k] > 0.0:
-                        mutual_info += joint_probs[i, j, k] * np.log2(joint_probs[i, j, k] / (px[i] * py[j] * pz[k]))
+                        mutual_info += joint_probs[i, j, k] * np.log2(
+                            joint_probs[i, j, k] / (px[i] * py[j] * pz[k])
+                        )
 
         self.mutual_information = mutual_info
         return self.mutual_information
@@ -136,29 +143,29 @@ class UQMetrics:
     # mutual_info_score = mutual_information(X, Y, Z)
 
     def calcu_prediction_surface(self, boxes):
-        cluster_df = pd.DataFrame(boxes, columns=['x1', 'y1', 'x2', 'y2'])
+        cluster_df = pd.DataFrame(boxes, columns=["x1", "y1", "x2", "y2"])
         self.prediction_surface = -1
         self.hull = []
         sf_tmp = 0
         if cluster_df.shape[0] > 2:
             try:
-                center_data = cluster_df[['x1', 'y1']].values
+                center_data = cluster_df[["x1", "y1"]].values
                 hull = ConvexHull(center_data)
                 self.hull.append(hull)
                 sf_tmp += hull.area
 
-                center_data = cluster_df[['x2', 'y1']].values
+                center_data = cluster_df[["x2", "y1"]].values
                 # print(center_data)
                 hull = ConvexHull(center_data)
                 self.hull.append(hull)
                 sf_tmp += hull.area
 
-                center_data = cluster_df[['x1', 'y2']].values
+                center_data = cluster_df[["x1", "y2"]].values
                 hull = ConvexHull(center_data)
                 self.hull.append(hull)
                 sf_tmp += hull.area
 
-                center_data = cluster_df[['x2', 'y2']].values
+                center_data = cluster_df[["x2", "y2"]].values
                 hull = ConvexHull(center_data)
                 self.hull.append(hull)
                 sf_tmp += hull.area
@@ -203,9 +210,9 @@ class UQMetrics:
         # return self.prediction_surface
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uq_metrics = UQMetrics()
-    uq_metrics.calcu_entropy([1/3, 1/3, 1/3])
+    uq_metrics.calcu_entropy([1 / 3, 1 / 3, 1 / 3])
     print(uq_metrics.shannon_entropy)
 
     print(uq_metrics.cal_vr(events=[]))

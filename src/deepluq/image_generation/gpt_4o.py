@@ -43,7 +43,7 @@ api_key = "sk-proj-GJlWQit9KLcIfzmtZlk5T3BlbkFJTP0mku2G4fITeprFZK7J"
 # Function to encode the image
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
 
 # Path to your image
@@ -94,8 +94,7 @@ response = client.chat.completions.create(
         {
             "role": "user",
             "content": [
-                {"type": "text",
-                 "text": "generate python code to add noises on it."},
+                {"type": "text", "text": "generate python code to add noises on it."},
                 {
                     "type": "image_url",
                     "image_url": {
