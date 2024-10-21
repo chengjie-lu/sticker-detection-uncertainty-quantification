@@ -20,7 +20,7 @@ response = requests.post(
     f"{api_host}/v1/generation/{engine_id}/image-to-image",
     headers={
         "Accept": "application/json",
-        "Authorization": f"Bearer sk-6mfIdTkpqQSLLxZczdez6hTVRxE3BHCH8CK3UIF1L1qLuCpY",
+        "Authorization": f"Bearer xxx",
     },
     files={"init_image": open("../test_images/vision_model/laptop.jpeg", "rb")},
     data={

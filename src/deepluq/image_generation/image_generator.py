@@ -18,7 +18,7 @@ class ImageGenerator:
         self.model = model
         self.i_path = i_path
         if self.model == "stable_diffusion":
-            api_key = "sk-6mfIdTkpqQSLLxZczdez6hTVRxE3BHCH8CK3UIF1L1qLuCpY"
+            api_key = "xxx"
             response = requests.post(
                 f"https://api.stability.ai/v2beta/stable-image/generate/sd3",
                 headers={"authorization": f"Bearer {api_key}", "accept": "image/*"},
@@ -40,7 +40,7 @@ class ImageGenerator:
 
         elif model == "dall":
             client = OpenAI(
-                api_key="sk-proj-GJlWQit9KLcIfzmtZlk5T3BlbkFJTP0mku2G4fITeprFZK7J"
+                api_key="xxx"
             )
 
             response = client.images.generate(

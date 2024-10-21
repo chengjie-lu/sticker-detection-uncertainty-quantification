@@ -10,7 +10,7 @@ import requests
 response = requests.post(
     f"https://api.stability.ai/v2beta/stable-image/generate/sd3",
     headers={
-        "authorization": f"Bearer sk-6mfIdTkpqQSLLxZczdez6hTVRxE3BHCH8CK3UIF1L1qLuCpY",
+        "authorization": f"Bearer xxx",
         "accept": "image/*",
     },
     files={"none": ""},

@@ -7,7 +7,7 @@
 
 from openai import OpenAI
 
-client = OpenAI(api_key="sk-proj-GJlWQit9KLcIfzmtZlk5T3BlbkFJTP0mku2G4fITeprFZK7J")
+client = OpenAI(api_key="xxx")
 
 # response = client.images.create_variation(
 #     model="dall-e-2",
