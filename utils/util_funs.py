@@ -35,7 +35,7 @@ CONFIG = {
 # CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt'
 
 MODEL_NAME = 'fasterrcnn_resnet50_fpn_v2'
-CHECKPOINT_PATH = 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt'
+CHECKPOINT_PATH = '../checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt'
 
 
 # MODEL_NAME = 'ssd300_vgg16'
@@ -97,8 +97,7 @@ def load_model(runtime_type, model_name=MODEL_NAME, checkout_path=CHECKPOINT_PAT
     if runtime_type == 'onnx':
         # for onnx model
         # export_model_path = "retinanet_resnet50_fpn_v2_aug.onnx"
-        export_model_path = "./checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints" \
-                            "/retinanet_resnet50_fpn_v2_aug.onnx"
+        export_model_path = "../checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/retinanet_resnet50_fpn_v2_aug.onnx"
 
         assert 'CUDAExecutionProvider' in onnxruntime.get_available_providers()
         # print(onnxruntime.get_available_providers())

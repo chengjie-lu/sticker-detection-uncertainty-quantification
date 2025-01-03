@@ -36,7 +36,7 @@ CONFIG = {
 
 MODEL_NAME = 'retinanet_resnet50_fpn_v2'
 
-CHECKPOINT_PATH = 'checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
+CHECKPOINT_PATH = '../checkpoints/retinanet_resnet50_fpn_v2_aug/version_0/checkpoints/epoch=31-step=7712.ckpt'
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 

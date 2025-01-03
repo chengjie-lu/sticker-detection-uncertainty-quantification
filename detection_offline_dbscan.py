@@ -14,11 +14,11 @@ from tqdm import tqdm
 import cv2 as cv
 import pandas as pd
 import torch
-from src.deepluq.uq import UQMetrics
-from utils import load_camera_calibration, load_model, run_model, calc_3d_point
+from src.deepluq.uq.metrics import UQMetrics
+from utils.util_funs import load_camera_calibration, load_model, run_model, calc_3d_point
 import numpy as np
-from src.deepluq.uq import DBSCANCluster
-from dataset_def_pl import StickerData
+from src.deepluq.uq.utils import DBSCANCluster
+from utils.dataset_def_pl import StickerData
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 LABELS = {'Background': 0, 'Logo': 1, 'Sticker': 2}
