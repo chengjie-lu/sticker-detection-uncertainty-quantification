@@ -6,7 +6,7 @@
 # @Software: PyCharm
 
 import pytest
-import deepluq.uq
+import src.deepluq.uq
 
 
 def test_library_import():
