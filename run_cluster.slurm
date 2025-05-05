@@ -23,5 +23,7 @@ export PYTHONPATH=root_path:$PYTHONPATH
 #srun bash run.sh "mc_dropblock" "fasterrcnn_resnet50_fpn fasterrcnn_resnet50_fpn_v2" "0 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.50" "dalleimg/org dalleimg/adv_run_1 dalleimg/adv_run_2 dalleimg/adv_run_3 dalleimg/adv_run_4 dalleimg/adv_run_5 dalleimg/adv_run_6 dalleimg/adv_run_7 dalleimg/adv_run_8 dalleimg/adv_run_9 dalleimg/adv_run_10" "experiment_results_mc_dropblock" "1 3 5 7 9"
 #srun bash run.sh "mc_dropblock" "retinanet_resnet50_fpn retinanet_resnet50_fpn_v2" "0 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.50" "dalleimg/org dalleimg/adv_run_1 dalleimg/adv_run_2 dalleimg/adv_run_3 dalleimg/adv_run_4 dalleimg/adv_run_5 dalleimg/adv_run_6 dalleimg/adv_run_7 dalleimg/adv_run_8 dalleimg/adv_run_9 dalleimg/adv_run_10" "experiment_results_mc_dropblock" "1 3 5 7 9"
 
+#
+
 srun bash run.sh "mc_dropblock" "fasterrcnn_resnet50_fpn fasterrcnn_resnet50_fpn_v2" "0 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.50" "sdimg/org sdimg/adv_run_1 sdimg/adv_run_2 sdimg/adv_run_3 sdimg/adv_run_4 sdimg/adv_run_5 sdimg/adv_run_6 sdimg/adv_run_7 sdimg/adv_run_8 sdimg/adv_run_9 sdimg/adv_run_10" "experiment_results_mc_dropblock" "1 3 5 7 9"
 #srun bash run.sh "mc_dropblock" "retinanet_resnet50_fpn retinanet_resnet50_fpn_v2" "0 0.1 0.15 0.2 0.25 0.3 0.35 0.4 0.45 0.50" "sdimg/org sdimg/adv_run_1 sdimg/adv_run_2 sdimg/adv_run_3 sdimg/adv_run_4 sdimg/adv_run_5 sdimg/adv_run_6 sdimg/adv_run_7 sdimg/adv_run_8 sdimg/adv_run_9 sdimg/adv_run_10" "experiment_results_mc_dropblock" "1 3 5 7 9"
