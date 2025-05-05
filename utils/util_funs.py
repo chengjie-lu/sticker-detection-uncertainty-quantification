@@ -2,7 +2,7 @@ from pypylon import pylon
 import numpy as np
 import cv2 as cv
 import json
-from model_def_pl import StickerDetector
+from utils.model_def_pl import StickerDetector
 import torch
 from torchvision import transforms
 import onnx
@@ -46,7 +46,7 @@ CHECKPOINT_PATH = '../checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.
 
 
 def load_camera_calibration():
-    with open('calibration.json', 'r') as f:
+    with open('utils/calibration.json', 'r') as f:
         parameters = json.load(f)
         p = np.array(parameters['mtx'])
         d = np.array(parameters['dist'])

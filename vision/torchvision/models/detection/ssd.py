@@ -17,6 +17,7 @@ from . import _utils as det_utils
 from .anchor_utils import DefaultBoxGenerator
 from .backbone_utils import _validate_trainable_layers
 from .transform import GeneralizedRCNNTransform
+from ...ops.drop_block import DropBlock2d
 
 __all__ = [
     "SSD300_VGG16_Weights",
@@ -59,19 +60,16 @@ class SSDHead(nn.Module):
         super().__init__()
         self.classification_head = SSDClassificationHead(in_channels, num_anchors, num_classes)
         self.regression_head = SSDRegressionHead(in_channels, num_anchors)
-        # f = open('/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/checkpoints/dropout.txt', 'r')
-        # dropout = float(f.read())
-        # f.close()
-        self.dropout = None
-
-    @staticmethod
-    def apply_dropout(m):
-        if type(m) == nn.Dropout:
-            m.train()
+    #     self.dropout = None
+    #
+    # @staticmethod
+    # def apply_dropout(m):
+    #     if type(m) == nn.Dropout:
+    #         m.train()
 
     def forward(self, x: List[Tensor]) -> Dict[str, Tensor]:
-        self.apply_dropout(self.dropout)
-        x = [self.dropout(t) for t in x]
+        # self.apply_dropout(self.dropout)
+        # x = [self.dropout(t) for t in x]
         return {
             "bbox_regression": self.regression_head(x),
             "cls_logits": self.classification_head(x),
@@ -84,6 +82,13 @@ class SSDScoringHead(nn.Module):
         self.module_list = module_list
         self.num_columns = num_columns
 
+        self.drop = None
+
+    @staticmethod
+    def apply_dropout(m):
+        if type(m) == nn.Dropout or type(m) == DropBlock2d:
+            m.train()
+
     def _get_result_from_module_list(self, x: Tensor, idx: int) -> Tensor:
         """
         This is equivalent to self.module_list[idx](x),
@@ -93,9 +98,13 @@ class SSDScoringHead(nn.Module):
         if idx < 0:
             idx += num_blocks
         out = x
+
+        self.apply_dropout(self.drop)
+        # x = [self.dropout(t) for t in x]
         for i, module in enumerate(self.module_list):
             if i == idx:
                 out = module(x)
+                out = self.drop(out)
         return out
 
     def forward(self, x: List[Tensor]) -> Tensor:

@@ -12,7 +12,7 @@ import json
 import os
 from PIL import Image
 import cv2 as cv
-from utils import load_camera_calibration, load_model, run_model, calc_3d_point
+from utils.util_funs import load_camera_calibration, load_model, run_model, calc_3d_point
 
 
 def collate_fn(batch):

@@ -9,6 +9,8 @@ from torch import nn, Tensor
 from ..ops.misc import Conv2dNormActivation
 from ..utils import _log_api_usage_once
 
+from ..ops.drop_block import DropBlock2d
+
 
 class ExtraFPNBlock(nn.Module):
     """
@@ -76,7 +78,6 @@ class FeaturePyramidNetwork(nn.Module):
 
     _version = 2
 
-
     def __init__(
             self,
             in_channels_list: List[int],
@@ -88,7 +89,9 @@ class FeaturePyramidNetwork(nn.Module):
         _log_api_usage_once(self)
         self.inner_blocks = nn.ModuleList()
         self.layer_blocks = nn.ModuleList()
+
         for in_channels in in_channels_list:
+            # print(len(in_channels_list))
             if in_channels == 0:
                 raise ValueError("in_channels=0 is currently not supported")
             inner_block_module = Conv2dNormActivation(
@@ -112,14 +115,12 @@ class FeaturePyramidNetwork(nn.Module):
                 raise TypeError(f"extra_blocks should be of type ExtraFPNBlock not {type(extra_blocks)}")
         self.extra_blocks = extra_blocks
 
-        # dropout_f = '/home/complexse/workspace/RoboSapiens/DTI-Laptop-refubishment/sticker_detector/checkpoints' \
-        #             '/dropout.txt'
-        # f = open(dropout_f, 'r')
-        # dropout = float(f.read())
-        # f.close()
-        # os.chmod(f_n, S_IWUSR | S_IREAD)
-        # print(self.__class__.d)
-        self.dropout = None
+        # self.dropout = None
+        # self.dropblock = None
+
+        self.drop = None
+        # DropBlock
+        # self.dropblock = DropBlock2d(block_size=5, p=0.1)
 
     def _load_from_state_dict(
             self,
@@ -155,7 +156,7 @@ class FeaturePyramidNetwork(nn.Module):
 
     @staticmethod
     def apply_dropout(m):
-        if type(m) == nn.Dropout:
+        if type(m) == nn.Dropout or type(m) == DropBlock2d:
             m.train()
 
     def get_result_from_inner_blocks(self, x: Tensor, idx: int) -> Tensor:
@@ -164,7 +165,8 @@ class FeaturePyramidNetwork(nn.Module):
         but torchscript doesn't support this yet
         """
 
-        self.apply_dropout(self.dropout)
+        self.apply_dropout(self.drop)
+        # self.apply_dropout(self.dropblock)
         num_blocks = len(self.inner_blocks)
         if idx < 0:
             idx += num_blocks
@@ -172,7 +174,9 @@ class FeaturePyramidNetwork(nn.Module):
         for i, module in enumerate(self.inner_blocks):
             if i == idx:
                 out = module(x)
-                out = self.dropout(out)
+                # out = self.dropout(out)
+                # out = self.dropblock(out)
+                out = self.drop(out)
         return out
 
     def get_result_from_layer_blocks(self, x: Tensor, idx: int) -> Tensor:
@@ -180,7 +184,7 @@ class FeaturePyramidNetwork(nn.Module):
         This is equivalent to self.layer_blocks[idx](x),
         but torchscript doesn't support this yet
         """
-        self.apply_dropout(self.dropout)
+        self.apply_dropout(self.drop)
 
         num_blocks = len(self.layer_blocks)
         if idx < 0:
@@ -189,7 +193,9 @@ class FeaturePyramidNetwork(nn.Module):
         for i, module in enumerate(self.layer_blocks):
             if i == idx:
                 out = module(x)
-                out = self.dropout(out)
+                # out = self.dropout(out)
+                # out = self.dropblock(out)
+                out = self.drop(out)
         return out
 
     def forward(self, x: Dict[str, Tensor]) -> Dict[str, Tensor]:
@@ -207,7 +213,7 @@ class FeaturePyramidNetwork(nn.Module):
         names = list(x.keys())
         x = list(x.values())
 
-        self.apply_dropout(self.dropout)
+        # self.apply_dropout(self.drop)
 
         last_inner = self.get_result_from_inner_blocks(x[-1], -1)
         results = []

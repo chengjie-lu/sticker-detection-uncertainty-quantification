@@ -19,19 +19,32 @@ from utils.util_funs import load_camera_calibration, load_model, run_model, calc
 import numpy as np
 from src.deepluq.uq.utils import DBSCANCluster
 from utils.dataset_def_pl import StickerData
+from vision.torchvision.ops.drop_block import DropBlock2d
 
 RUNTIME_TYPE = 'normal'  # Choices == 'onnx' and 'normal'
 LABELS = {'Background': 0, 'Logo': 1, 'Sticker': 2}
 
 
 class Detection:
-    def __init__(self, images_path, model_name, checkout_path, dropout):
+    def __init__(self, images_path, model_name, checkout_path, drop_rate, block_size):
         self.model = load_model(RUNTIME_TYPE, model_name=model_name, checkout_path=checkout_path)
-        if model_name in ['ssd300_vgg16', 'ssdlite320_mobilenet_v3_large']:
-            self.model.model.head.dropout = nn.Dropout(p=dropout)
+        if block_size == -1:
+            # mc_dropout is applied
+            if model_name in ['ssd300_vgg16', 'ssdlite320_mobilenet_v3_large']:
+                self.model.model.head.classification_head.drop = nn.Dropout(p=drop_rate)
+                self.model.model.head.regression_head.drop = nn.Dropout(p=drop_rate)
+            else:
+                self.model.model.backbone.fpn.drop = nn.Dropout(p=drop_rate)
         else:
-            self.model.model.backbone.fpn.dropout = nn.Dropout(p=dropout)
+            # print('MC-DropBlock is applied for UQ ....')
+            # mc_dropout is applied
+            if model_name in ['ssd300_vgg16', 'ssdlite320_mobilenet_v3_large']:
+                self.model.model.head.classification_head.drop = DropBlock2d(block_size=block_size, p=drop_rate)
+                self.model.model.head.regression_head.drop = DropBlock2d(block_size=block_size, p=drop_rate)
+            else:
+                self.model.model.backbone.fpn.drop = DropBlock2d(block_size=block_size, p=drop_rate)
 
+        # self.dropblock = DropBlock2d(block_size=5, p=0.1)
         self.p, self.d, self.dist_maps = load_camera_calibration()
         self.min_score = 0.6
         self.show_bounding_box_sticker = True
@@ -332,10 +345,11 @@ def run(model_name, checkout_path):
         #     to_csv('./performance.csv', mode='a', header=False, index=False)
 
 
-def run_uq(model_name, checkout_path, save_path, uq_logs, dropout, dataset='val', T=40):
+def run_uq(model_name, checkout_path, save_path, uq_logs, drop_rate, block_size, dataset='val', T=40):
     map_metric_overall = torchmetrics.detection.MeanAveragePrecision(max_detection_thresholds=[1, 5, 100],
                                                                      iou_thresholds=[0.5])
-    detector = Detection('data/test', model_name=model_name, checkout_path=checkout_path, dropout=dropout)
+    detector = Detection('data/test', model_name=model_name, checkout_path=checkout_path,
+                         drop_rate=drop_rate, block_size=block_size)
     sticker_data = StickerData(train_folder='data/train', valid_folder='data/val',
                                test_folder='dataset/{}'.format(dataset))
     sticker_data.setup(stage='test')
@@ -421,7 +435,7 @@ def run_uq(model_name, checkout_path, save_path, uq_logs, dropout, dataset='val'
                 })
             predictions = detector.avg_uq(predictions)
 
-            with open('{}/dropout_{}_{}.json'.format(uq_logs, dropout, i_name[0].split('/')[-1].split('.')[0]),
+            with open('{}/dropout_{}_{}.json'.format(uq_logs, drop_rate, i_name[0].split('/')[-1].split('.')[0]),
                       'w') as f:
                 json.dump(predictions, f, indent=4)
 
@@ -479,31 +493,52 @@ def run_uq(model_name, checkout_path, save_path, uq_logs, dropout, dataset='val'
 if __name__ == '__main__':
     models = {
         'retinanet_resnet50_fpn': 'checkpoints/retinanet_resnet50_fpn/epoch=30-step=7471.ckpt',
-        'retinanet_resnet50_fpn_v2': 'checkpoints/retinanet_resnet50_fpn_v2/epoch=31-step=7712.ckpt',
-        'fasterrcnn_resnet50_fpn': 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt',
-        'fasterrcnn_resnet50_fpn_v2': 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt',
-        'ssd300_vgg16': 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt',
-        'ssdlite320_mobilenet_v3_large': 'checkpoints/ssdlite320_mobilenet_v3_large/epoch=18-step=9139.ckpt'
+        # 'retinanet_resnet50_fpn_v2': 'checkpoints/retinanet_resnet50_fpn_v2/epoch=31-step=7712.ckpt',
+        # 'fasterrcnn_resnet50_fpn': 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt',
+        # 'fasterrcnn_resnet50_fpn_v2': 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt',
+        # 'ssd300_vgg16': 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt',
+        # 'ssdlite320_mobilenet_v3_large': 'checkpoints/ssdlite320_mobilenet_v3_large/epoch=18-step=9139.ckpt'
     }
 
+    headers = ['image', 'image_name', 'MAP', 'UQ[VR]', 'UQ[IE]', 'UQ[MI]', 'UQ[TR]', 'UQ[PS]',
+               'MAP[50]', 'MAP[75]', 'MAP[Small]', 'MAP[Medium]', 'MAP[Large]', 'MAR[1]', 'MAR[5]',
+               'MAR[100]', 'MAR[Small]', 'MAR[Medium]', 'MAR[Large]']
+
+    uq_method = 'mc_dropblock'
+
+    print('===================================')
+    print('{} is applied for UQ ....'.format(uq_method))
+
     for model_n in models.keys():
-        for d_i in range(0, 11):
+        # for d_i in range(0, 11):
+        for d_i in range(0, 1):
             dataset_n = 'sdimg/org' if d_i == 0 else 'sdimg/adv_run_{}'.format(d_i)
+            logs = 'experiment_results/{}/dataset/{}'.format(model_n, dataset_n)
+            if not os.path.exists(logs):
+                os.makedirs(logs)
 
-            for drop_out in [0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-                print(model_n, dataset_n, drop_out)
-                headers = ['image', 'image_name', 'MAP', 'UQ[VR]', 'UQ[IE]', 'UQ[MI]', 'UQ[TR]', 'UQ[PS]',
-                           'MAP[50]', 'MAP[75]', 'MAP[Small]', 'MAP[Medium]', 'MAP[Large]', 'MAR[1]', 'MAR[5]',
-                           'MAR[100]', 'MAR[Small]', 'MAR[Medium]', 'MAR[Large]']
+            # for d_rate in [0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
+            for d_rate in [0.1]:
+                if uq_method == 'mc_dropout':
+                    print(model_n, dataset_n, d_rate)
+                    print('===================================')
 
-                logs = 'experiment_results/{}/dataset/{}'.format(model_n, dataset_n)
-                if not os.path.exists(logs):
-                    os.makedirs(logs)
+                    f_n = './experiment_results/{}/logs_{}_{}.csv'.format(model_n, d_rate,
+                                                                          dataset_n.replace('/', '-'))
+                    pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
+                    run_uq(model_name=model_n, checkout_path=models[model_n], T=20, dataset=dataset_n,
+                           save_path=f_n, uq_logs=logs, drop_rate=d_rate, block_size=-1)
 
-                f_n = './experiment_results/{}/logs_{}_{}.csv'.format(model_n, drop_out, dataset_n.replace('/', '-'))
-                pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
-                run_uq(model_name=model_n, checkout_path=models[model_n], T=20, dataset=dataset_n,
-                       save_path=f_n, uq_logs=logs, dropout=drop_out)
+                elif uq_method == 'mc_dropblock':
+                    for b_size in [9]:  # 1, 3, 5, 7, 9
+                        print(model_n, dataset_n, d_rate, b_size)
+                        print('===================================')
+
+                        f_n = './experiment_results/{}/logs_{}_{}_{}.csv'.format(model_n, d_rate, b_size,
+                                                                                 dataset_n.replace('/', '-'))
+                        pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
+                        run_uq(model_name=model_n, checkout_path=models[model_n], T=20, dataset=dataset_n,
+                               save_path=f_n, uq_logs=logs, drop_rate=d_rate, block_size=b_size)
 
     # for i in range(1):
     #     run_single(model_name='retinanet_resnet50_fpn_v2',
