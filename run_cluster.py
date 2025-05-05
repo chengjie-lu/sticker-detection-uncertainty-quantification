@@ -8,7 +8,6 @@ import argparse
 import os
 
 import pandas as pd
-
 from detection_offline_dbscan import run_uq
 
 models = {
@@ -22,40 +21,46 @@ models = {
 
 
 def main(args):
-<<<<<<< HEAD
-    print(args.model_n, args.dataset_p, args.dropout, args.save_folder)
-=======
-    print(args.model_n, args.dataset_p, args.dropout)
->>>>>>> c7efb1406a0f231779ee944156eb24f6acd4ec64
-
-    # dataset_n = args.dataset_p
+    # print(args.uq_method, args.model_n, args.dataset_p, args.drop_rate, args.save_folder)
+    print('===================================')
+    print('{} is applied for UQ ....'.format(args.uq_method))
 
     headers = ['image', 'image_name', 'MAP', 'UQ[VR]', 'UQ[IE]', 'UQ[MI]', 'UQ[TR]', 'UQ[PS]',
                'MAP[50]', 'MAP[75]', 'MAP[Small]', 'MAP[Medium]', 'MAP[Large]', 'MAR[1]', 'MAR[5]', 'MAR[100]',
                'MAR[Small]', 'MAR[Medium]', 'MAR[Large]']
 
-<<<<<<< HEAD
     logs = '{}/{}/dataset/{}'.format(args.save_folder, args.model_n, args.dataset_p)
     if not os.path.exists(logs):
         os.makedirs(logs)
 
-    f_n = './{}/{}/logs_{}_{}.csv'.format(args.save_folder, args.model_n, args.dropout, args.dataset_p.replace('/', '-'))
-    pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
-    run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=20, dataset=args.dataset_p,
-=======
-    logs = 'experiment_results/{}/dataset/{}'.format(args.model_n, args.dataset_p)
-    if not os.path.exists(logs):
-        os.makedirs(logs)
+    if args.uq_method == 'mc_dropout':
+        print(args.model_n, args.dataset_p, args.drop_rate)
+        print('===================================')
 
-    f_n = './experiment_results/{}/logs_{}_{}.csv'.format(args.model_n, args.dropout, args.dataset_p.replace('/', '-'))
-    pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
-    run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=30, dataset=args.dataset_p,
->>>>>>> c7efb1406a0f231779ee944156eb24f6acd4ec64
-           save_path=f_n, uq_logs=logs, dropout=args.dropout)
+        f_n = './experiment_results/{}/logs_{}_{}.csv'.format(args.model_n, args.drop_rate,
+                                                              args.dataset_p.replace('/', '-'))
+        pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
+        run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=20, dataset=args.dataset_p,
+               save_path=f_n, uq_logs=logs, drop_rate=args.drop_rate, block_size=-1)
+
+    elif args.uq_method == 'mc_dropblock':
+        print(args.model_n, args.dataset_p, args.drop_rate)
+        print('===================================')
+
+        f_n = './experiment_results/{}/logs_{}_{}.csv'.format(args.model_n, args.drop_rate,
+                                                              args.dataset_p.replace('/', '-'))
+        pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
+        run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=20, dataset=args.dataset_p,
+               save_path=f_n, uq_logs=logs, drop_rate=args.drop_rate, block_size=args.block_size)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--uq_method",
+                        required=True,
+                        default='mc_dropout',
+                        help="uncertainty quantification method",
+                        )
     parser.add_argument("--model_n",
                         required=True,
                         default='ssdlite320_mobilenet_v3_large',
@@ -65,18 +70,21 @@ if __name__ == '__main__':
                         required=True,
                         default='origimg/test',
                         help="Path of the dataset")
-<<<<<<< HEAD
     parser.add_argument("--save_folder",
                         required=True,
                         default='experiment_results',
                         help="Path of the dataset")
-=======
->>>>>>> c7efb1406a0f231779ee944156eb24f6acd4ec64
-    parser.add_argument("--dropout",
+    parser.add_argument("--drop_rate",
                         required=True,
                         type=float,
                         default=0.1,
                         help="Dropout rate",
+                        )
+    parser.add_argument("--block_size",
+                        required=True,
+                        type=int,
+                        default=1,
+                        help="Block size for MC-DropBlock",
                         )
 
     arg = parser.parse_args()

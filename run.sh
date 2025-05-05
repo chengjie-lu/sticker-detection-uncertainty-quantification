@@ -1,9 +1,11 @@
 #!/bin/bash
 
-models=$1
-dropouts=$2
-datasets=$3
-save_path=$4
+uq_method=$1
+models=$2
+drop_rates=$3
+datasets=$4
+save_path=$5
+block_sizes=$6
 
 # models="fasterrcnn_resnet50_fpn fasterrcnn_resnet50_fpn_v2 ssd300_vgg16 ssdlite320_mobilenet_v3_large retinanet_resnet50_fpn retinanet_resnet50_fpn_v2"
 # models="ssd300_vgg16 ssdlite320_mobilenet_v3_large"
@@ -24,17 +26,19 @@ save_path=$4
 
 # datasets="dalleimg/org dalleimg/adv_run_1 dalleimg/adv_run_2 dalleimg/adv_run_3 dalleimg/adv_run_4 dalleimg/adv_run_5 dalleimg/adv_run_6 dalleimg/adv_run_7 dalleimg/adv_run_8 dalleimg/adv_run_9 dalleimg/adv_run_10"
 
-echo $models
-echo $dropouts
-echo $datasets
-echo $save_path
+echo "$uq_method"
+echo "$models"
+echo "$drop_rates"
+echo "$datasets"
+echo "$save_path"
+echo "$block_sizes"
 echo "=================="
 
 
 for model in ${models[*]}
 do
 	
-	for dropout in ${dropouts[*]}
+	for drop_rate in ${drop_rates[*]}
 	do
 		#if [[ "$dropout" == '0.1' ]]; then
 		#	echo "0.1 dropout"
@@ -42,7 +46,10 @@ do
   		#fi
         	for d in ${datasets[*]}
         	do
-                	python run_cluster.py --model_n=$model --dataset_p=$d --dropout=$dropout --save_folder=$save_path
+        	  for block_size in ${block_sizes[*]}
+        	  do
+                	python run_cluster.py --uq_method="$uq_method" --model_n="$model" --dataset_p="$d" --drop_rate="$drop_rate" --save_folder="$save_path" --block_size="$block_size"
+            done
         	done
 	done
 done
