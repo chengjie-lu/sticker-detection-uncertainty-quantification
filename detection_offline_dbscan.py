@@ -511,7 +511,7 @@ if __name__ == '__main__':
 
     for model_n in models.keys():
         for d_i in range(0, 11):
-            dataset_n = 'origimg/org' if d_i == 0 else 'origimg/adv_run_{}'.format(d_i)
+            dataset_n = 'sdimg/org' if d_i == 0 else 'sdimg/adv_run_{}'.format(d_i)
             logs = 'experiment_results_{}/{}/dataset/{}'.format(uq_method, model_n, dataset_n)
             if not os.path.exists(logs):
                 os.makedirs(logs)

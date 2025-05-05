@@ -5,6 +5,7 @@ checkpoints/
 *.onnx
 *.pth
 experiment_results_v1/
+experiment_results_mc_dropblock/
 dataset/
 .idea/
 __pycache__/
