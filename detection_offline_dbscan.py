@@ -492,11 +492,11 @@ def run_uq(model_name, checkout_path, save_path, uq_logs, drop_rate, block_size,
 
 if __name__ == '__main__':
     models = {
-        'retinanet_resnet50_fpn': 'checkpoints/retinanet_resnet50_fpn/epoch=30-step=7471.ckpt',
+        # 'retinanet_resnet50_fpn': 'checkpoints/retinanet_resnet50_fpn/epoch=30-step=7471.ckpt',
         # 'retinanet_resnet50_fpn_v2': 'checkpoints/retinanet_resnet50_fpn_v2/epoch=31-step=7712.ckpt',
         # 'fasterrcnn_resnet50_fpn': 'checkpoints/fasterrcnn_resnet50_fpn/epoch=14-step=1815.ckpt',
         # 'fasterrcnn_resnet50_fpn_v2': 'checkpoints/fasterrcnn_resnet50_fpn_v2/epoch=16-step=8177.ckpt',
-        # 'ssd300_vgg16': 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt',
+        'ssd300_vgg16': 'checkpoints/ssd300_vgg16/epoch=33-step=4114.ckpt',
         # 'ssdlite320_mobilenet_v3_large': 'checkpoints/ssdlite320_mobilenet_v3_large/epoch=18-step=9139.ckpt'
     }
 
@@ -510,32 +510,30 @@ if __name__ == '__main__':
     print('{} is applied for UQ ....'.format(uq_method))
 
     for model_n in models.keys():
-        # for d_i in range(0, 11):
-        for d_i in range(0, 1):
-            dataset_n = 'sdimg/org' if d_i == 0 else 'sdimg/adv_run_{}'.format(d_i)
-            logs = 'experiment_results/{}/dataset/{}'.format(model_n, dataset_n)
+        for d_i in range(0, 11):
+            dataset_n = 'origimg/org' if d_i == 0 else 'origimg/adv_run_{}'.format(d_i)
+            logs = 'experiment_results_{}/{}/dataset/{}'.format(uq_method, model_n, dataset_n)
             if not os.path.exists(logs):
                 os.makedirs(logs)
 
-            # for d_rate in [0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
-            for d_rate in [0.1]:
+            for d_rate in [0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
                 if uq_method == 'mc_dropout':
                     print(model_n, dataset_n, d_rate)
                     print('===================================')
 
-                    f_n = './experiment_results/{}/logs_{}_{}.csv'.format(model_n, d_rate,
-                                                                          dataset_n.replace('/', '-'))
+                    f_n = './experiment_results_{}/{}/logs_{}_{}.csv'.format(uq_method, model_n, d_rate,
+                                                                             dataset_n.replace('/', '-'))
                     pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
                     run_uq(model_name=model_n, checkout_path=models[model_n], T=20, dataset=dataset_n,
                            save_path=f_n, uq_logs=logs, drop_rate=d_rate, block_size=-1)
 
                 elif uq_method == 'mc_dropblock':
-                    for b_size in [9]:  # 1, 3, 5, 7, 9
+                    for b_size in [1, 3, 5, 7, 9]:  # 1, 3, 5, 7, 9
                         print(model_n, dataset_n, d_rate, b_size)
                         print('===================================')
 
-                        f_n = './experiment_results/{}/logs_{}_{}_{}.csv'.format(model_n, d_rate, b_size,
-                                                                                 dataset_n.replace('/', '-'))
+                        f_n = './experiment_results_{}/{}/logs_{}_{}_{}.csv'.format(uq_method, model_n, d_rate, b_size,
+                                                                                    dataset_n.replace('/', '-'))
                         pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
                         run_uq(model_name=model_n, checkout_path=models[model_n], T=20, dataset=dataset_n,
                                save_path=f_n, uq_logs=logs, drop_rate=d_rate, block_size=b_size)

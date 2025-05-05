@@ -37,8 +37,8 @@ def main(args):
         print(args.model_n, args.dataset_p, args.drop_rate)
         print('===================================')
 
-        f_n = './experiment_results/{}/logs_{}_{}.csv'.format(args.model_n, args.drop_rate,
-                                                              args.dataset_p.replace('/', '-'))
+        f_n = './{}/{}/logs_{}_{}.csv'.format(args.save_folder, args.model_n, args.drop_rate,
+                                              args.dataset_p.replace('/', '-'))
         pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
         run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=20, dataset=args.dataset_p,
                save_path=f_n, uq_logs=logs, drop_rate=args.drop_rate, block_size=-1)
@@ -47,8 +47,8 @@ def main(args):
         print(args.model_n, args.dataset_p, args.drop_rate)
         print('===================================')
 
-        f_n = './experiment_results/{}/logs_{}_{}.csv'.format(args.model_n, args.drop_rate,
-                                                              args.dataset_p.replace('/', '-'))
+        f_n = './{}/{}/logs_{}_{}.csv'.format(args.save_folder, args.model_n, args.drop_rate,
+                                              args.dataset_p.replace('/', '-'))
         pd.DataFrame([headers]).to_csv(f_n, mode='w', header=False, index=False)
         run_uq(model_name=args.model_n, checkout_path=models[args.model_n], T=20, dataset=args.dataset_p,
                save_path=f_n, uq_logs=logs, drop_rate=args.drop_rate, block_size=args.block_size)
